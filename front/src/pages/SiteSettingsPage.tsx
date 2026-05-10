@@ -90,7 +90,7 @@ export default function SiteSettingsPage() {
   const [showRazorpaySecret, setShowRazorpaySecret] = useState(false);
   const [showShiprocketPassword, setShowShiprocketPassword] = useState(false);
   const [showGoogleSecret, setShowGoogleSecret] = useState(false);
-  const [oauthProviders, setOauthProviders] = useState<{ provider: string; isEnabled: boolean; clientId: string; clientSecret: string; hasSecret: boolean }[]>([]);
+  const [_oauthProviders, setOauthProviders] = useState<{ provider: string; isEnabled: boolean; clientId: string; clientSecret: string; hasSecret: boolean }[]>([]);
   const [oauthForm, setOauthForm] = useState<Record<string, { isEnabled: boolean; clientId: string; clientSecret: string }>>({});
 
   // Payment settings (from PaymentSettings - controls checkout options)
@@ -145,7 +145,7 @@ export default function SiteSettingsPage() {
     shiprocketEnabled: false,
   });
 
-  const [storageConfig, setStorageConfig] = useState<{
+  const [_storageConfig, setStorageConfig] = useState<{
     activeProvider: string | null;
     uploadFolder: string;
     spacesAccessKey?: string;

@@ -16,7 +16,6 @@ import {
   HiPencil,
   HiTrash,
   HiPlay,
-  HiEye,
 } from "react-icons/hi";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
@@ -152,7 +151,7 @@ export default function ShoppableCarouselPage() {
     },
   });
 
-  const thumbDropzone = useDropzone({
+  useDropzone({
     accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
     multiple: false,
     onDrop: (accepted) => {

@@ -1,8 +1,8 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { forwardRef, useRef, useMemo, useLayoutEffect } from 'react';
-import { Color } from 'three';
+import { Color, Mesh, ShaderMaterial } from 'three';
 
-const hexToNormalizedRGB = hex => {
+const hexToNormalizedRGB = (hex: string): [number, number, number] => {
   hex = hex.replace('#', '');
   return [
     parseInt(hex.slice(0, 2), 16) / 255,
@@ -68,18 +68,32 @@ void main() {
 }
 `;
 
-const SilkPlane = forwardRef(function SilkPlane({ uniforms }, ref) {
+interface SilkPlaneProps {
+  uniforms: {
+    uSpeed: { value: number };
+    uScale: { value: number };
+    uNoiseIntensity: { value: number };
+    uColor: { value: Color };
+    uRotation: { value: number };
+    uTime: { value: number };
+  };
+}
+
+const SilkPlane = forwardRef<Mesh, SilkPlaneProps>(function SilkPlane({ uniforms }, ref) {
   const { viewport } = useThree();
 
   useLayoutEffect(() => {
-    if (ref.current) {
+    if (ref && typeof ref !== 'function' && ref.current) {
       ref.current.scale.set(viewport.width, viewport.height, 1);
     }
   }, [ref, viewport]);
 
   useFrame((_, delta) => {
-    if (ref?.current?.material?.uniforms?.uTime) {
-      ref.current.material.uniforms.uTime.value += 0.1 * delta;
+    if (ref && typeof ref !== 'function' && ref.current) {
+      const material = ref.current.material as ShaderMaterial;
+      if (material.uniforms?.uTime) {
+        material.uniforms.uTime.value += 0.1 * delta;
+      }
     }
   });
 
@@ -92,8 +106,16 @@ const SilkPlane = forwardRef(function SilkPlane({ uniforms }, ref) {
 });
 SilkPlane.displayName = 'SilkPlane';
 
-const Silk = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, rotation = 0 }) => {
-  const meshRef = useRef();
+interface SilkProps {
+  speed?: number;
+  scale?: number;
+  color?: string;
+  noiseIntensity?: number;
+  rotation?: number;
+}
+
+const Silk = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, rotation = 0 }: SilkProps) => {
+  const meshRef = useRef<Mesh>(null);
 
   const uniforms = useMemo(
     () => ({
