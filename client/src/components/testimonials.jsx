@@ -12,7 +12,7 @@ export default function TestimonialsSection() {
       role: "Fitness Enthusiast",
       avatar: "RS",
       quote:
-        "I've tried many supplements, but suratclothhouse products have truly made a difference in my training and recovery.",
+        "I've tried many supplements, but  trayalife products have truly made a difference in my training and recovery.",
       rating: 5,
     },
     {

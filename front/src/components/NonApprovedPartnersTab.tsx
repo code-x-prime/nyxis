@@ -85,7 +85,7 @@ export default function NonApprovedPartnersTab() {
             closeApproveDialog();
 
             // Show demo password to admin
-            const demoPassword = response.data.data.demoPassword || 'suratclothhouse';
+            const demoPassword = response.data.data.demoPassword || ' trayalife';
             alert(t("partners_tab.non_approved.approve_success", { password: demoPassword }));
         } catch (err) {
             if (axios.isAxiosError(err)) {
@@ -295,7 +295,7 @@ export default function NonApprovedPartnersTab() {
                     <div className="bg-accent p-4 rounded-lg">
                         <p className="font-semibold text-sm mb-2">{t("partners_tab.non_approved.demo_pass")}:</p>
                         <p className="font-mono text-lg bg-background px-3 py-2 rounded border">
-                            suratclothhouse
+                            trayalife
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">
                             {t("partners_tab.non_approved.demo_note")}

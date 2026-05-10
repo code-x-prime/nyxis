@@ -151,7 +151,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Your OTP for Email Verification - suratclothhouse",
+      subject: "Your OTP for Email Verification -  trayalife",
       html: getEmailOtpTemplate(otpCode, 10),
     });
 
@@ -427,7 +427,7 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Reset Your Password - suratclothhouse",
+      subject: "Reset Your Password -  trayalife",
       html: getResetTemplate(resetLink),
     });
 
@@ -920,48 +920,48 @@ export const getUserWishlist = asyncHandler(async (req, res, next) => {
 
         // Enhanced image handling with fallback logic
         let primaryImageUrl = null;
-      const allImages = [];
+        const allImages = [];
 
-      // Priority 1: Product images
-      if (product.images && product.images.length > 0) {
-        const primaryImage = product.images.find((img) => img.isPrimary);
-        primaryImageUrl = primaryImage
-          ? primaryImage.url
-          : product.images[0].url;
-
-        // Add all product images to the images array
-        allImages.push(...product.images.map((img) => getFileUrl(img.url)));
-      }
-      // Priority 2: Variant images as fallback
-      else if (product.variants && product.variants.length > 0) {
-        const variantWithImages = product.variants.find(
-          (variant) => variant.images && variant.images.length > 0
-        );
-        if (variantWithImages) {
-          const primaryImage = variantWithImages.images.find(
-            (img) => img.isPrimary
-          );
+        // Priority 1: Product images
+        if (product.images && product.images.length > 0) {
+          const primaryImage = product.images.find((img) => img.isPrimary);
           primaryImageUrl = primaryImage
             ? primaryImage.url
-            : variantWithImages.images[0].url;
+            : product.images[0].url;
 
-          // Add variant images to the images array
-          allImages.push(
-            ...variantWithImages.images.map((img) => getFileUrl(img.url))
-          );
+          // Add all product images to the images array
+          allImages.push(...product.images.map((img) => getFileUrl(img.url)));
         }
-      }
+        // Priority 2: Variant images as fallback
+        else if (product.variants && product.variants.length > 0) {
+          const variantWithImages = product.variants.find(
+            (variant) => variant.images && variant.images.length > 0
+          );
+          if (variantWithImages) {
+            const primaryImage = variantWithImages.images.find(
+              (img) => img.isPrimary
+            );
+            primaryImageUrl = primaryImage
+              ? primaryImage.url
+              : variantWithImages.images[0].url;
 
-      // Calculate average rating
-      const avgRating =
-        product.reviews.length > 0
-          ? (
-            product.reviews.reduce((sum, review) => sum + review.rating, 0) /
-            product.reviews.length
-          ).toFixed(1)
-          : 0;
+            // Add variant images to the images array
+            allImages.push(
+              ...variantWithImages.images.map((img) => getFileUrl(img.url))
+            );
+          }
+        }
 
-      // Get price from first available variant (apply flash sale)
+        // Calculate average rating
+        const avgRating =
+          product.reviews.length > 0
+            ? (
+              product.reviews.reduce((sum, review) => sum + review.rating, 0) /
+              product.reviews.length
+            ).toFixed(1)
+            : 0;
+
+        // Get price from first available variant (apply flash sale)
         const firstVariant = product.variants[0];
         let basePrice = parseFloat(firstVariant?.salePrice || firstVariant?.price || 0);
         const fs = basePrice > 0 ? await applyFlashSalePrice(basePrice, product.id) : null;
@@ -970,82 +970,82 @@ export const getUserWishlist = asyncHandler(async (req, res, next) => {
         const hasSale = fs?.hasFlashSale || (firstVariant?.salePrice && firstVariant?.salePrice < firstVariant?.price);
 
         return {
-        id: item.id,
-        productId: product.id,
-        name: product.name,
-        description: product.description,
-        price: price,
-        regularPrice: regularPrice,
-        hasSale: hasSale,
-        image: primaryImageUrl ? getFileUrl(primaryImageUrl) : null,
-        images: allImages,
-        slug: product.slug,
-        featured: product.featured,
-        avgRating: parseFloat(avgRating),
-        reviewCount: product._count.reviews,
-        flavors: product._count.variants,
-        variants: product.variants.map((variant) => ({
-          id: variant.id,
-          sku: variant.sku,
-          price: variant.price,
-          salePrice: variant.salePrice,
-          // Extract all attributes dynamically
-          attributes: (() => {
-            if (!variant.attributes) return {};
-            const attributesMap = {};
-            variant.attributes.forEach((vav) => {
-              const attrName = vav.attributeValue?.attribute?.name;
-              const attrValue = vav.attributeValue?.value;
-              const hexCode = vav.attributeValue?.hexCode;
-              const image = vav.attributeValue?.image;
-              if (attrName && attrValue) {
-                attributesMap[attrName] = {
-                  id: vav.attributeValue.id,
-                  name: attrValue,
-                  value: attrValue,
-                  hexCode: hexCode || null,
-                  image: image || null,
-                };
-              }
-            });
-            return attributesMap;
-          })(),
-          // Backward compatibility - keep color and size for existing code
-          color: (() => {
-            const colorAttr = variant.attributes?.find(
-              (attr) => attr.attributeValue?.attribute?.name === "Color"
-            );
-            return colorAttr
-              ? {
-                id: colorAttr.attributeValue.id,
-                name: colorAttr.attributeValue.value,
-                hexCode: colorAttr.attributeValue.hexCode || null,
-                image: colorAttr.attributeValue.image || null,
-              }
-              : null;
-          })(),
-          size: (() => {
-            const sizeAttr = variant.attributes?.find(
-              (attr) => attr.attributeValue?.attribute?.name === "Size"
-            );
-            return sizeAttr
-              ? {
-                id: sizeAttr.attributeValue.id,
-                name: sizeAttr.attributeValue.value,
-                description: null,
-              }
-              : null;
-          })(),
-          images: variant.images
-            ? variant.images.map((img) => ({
-              ...img,
-              url: getFileUrl(img.url),
-            }))
-            : [],
-        })),
-        createdAt: item.createdAt,
-      };
-    })
+          id: item.id,
+          productId: product.id,
+          name: product.name,
+          description: product.description,
+          price: price,
+          regularPrice: regularPrice,
+          hasSale: hasSale,
+          image: primaryImageUrl ? getFileUrl(primaryImageUrl) : null,
+          images: allImages,
+          slug: product.slug,
+          featured: product.featured,
+          avgRating: parseFloat(avgRating),
+          reviewCount: product._count.reviews,
+          flavors: product._count.variants,
+          variants: product.variants.map((variant) => ({
+            id: variant.id,
+            sku: variant.sku,
+            price: variant.price,
+            salePrice: variant.salePrice,
+            // Extract all attributes dynamically
+            attributes: (() => {
+              if (!variant.attributes) return {};
+              const attributesMap = {};
+              variant.attributes.forEach((vav) => {
+                const attrName = vav.attributeValue?.attribute?.name;
+                const attrValue = vav.attributeValue?.value;
+                const hexCode = vav.attributeValue?.hexCode;
+                const image = vav.attributeValue?.image;
+                if (attrName && attrValue) {
+                  attributesMap[attrName] = {
+                    id: vav.attributeValue.id,
+                    name: attrValue,
+                    value: attrValue,
+                    hexCode: hexCode || null,
+                    image: image || null,
+                  };
+                }
+              });
+              return attributesMap;
+            })(),
+            // Backward compatibility - keep color and size for existing code
+            color: (() => {
+              const colorAttr = variant.attributes?.find(
+                (attr) => attr.attributeValue?.attribute?.name === "Color"
+              );
+              return colorAttr
+                ? {
+                  id: colorAttr.attributeValue.id,
+                  name: colorAttr.attributeValue.value,
+                  hexCode: colorAttr.attributeValue.hexCode || null,
+                  image: colorAttr.attributeValue.image || null,
+                }
+                : null;
+            })(),
+            size: (() => {
+              const sizeAttr = variant.attributes?.find(
+                (attr) => attr.attributeValue?.attribute?.name === "Size"
+              );
+              return sizeAttr
+                ? {
+                  id: sizeAttr.attributeValue.id,
+                  name: sizeAttr.attributeValue.value,
+                  description: null,
+                }
+                : null;
+            })(),
+            images: variant.images
+              ? variant.images.map((img) => ({
+                ...img,
+                url: getFileUrl(img.url),
+              }))
+              : [],
+          })),
+          createdAt: item.createdAt,
+        };
+      })
     );
 
     res
@@ -1345,7 +1345,7 @@ export const requestAccountDeletion = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email: user.email,
-      subject: "Confirm Account Deletion - suratclothhouse",
+      subject: "Confirm Account Deletion -  trayalife",
       html: getDeleteTemplate(deletionLink),
     });
 
@@ -1627,7 +1627,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Your OTP for Email Verification - suratclothhouse",
+      subject: "Your OTP for Email Verification -  trayalife",
       html: getEmailOtpTemplate(otpCode, 10),
     });
 

@@ -888,7 +888,7 @@
       "state": "Estado",
       "no_message": "No se proporcionó mensaje",
       "approve_title": "Aprobar socio",
-      "approve_desc": "Este socio será aprobado con la contraseña de demostración \"suratclothhouse\". Por favor, comparta esta contraseña con el socio después de la aprobación.",
+      "approve_desc": "Este socio será aprobado con la contraseña de demostración \" trayalife\". Por favor, comparta esta contraseña con el socio después de la aprobación.",
       "demo_password": "Contraseña de demostración",
       "demo_hint": "El socio puede iniciar sesión con esta contraseña y se le pedirá que la cambie.",
       "approving": "Aprobando...",

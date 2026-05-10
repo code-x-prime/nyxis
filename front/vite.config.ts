@@ -16,16 +16,16 @@ export default defineConfig({
     port: 4173,
     host: "0.0.0.0",
     allowedHosts: [
-      "admin.suratclothhouse.com",
-      "www.admin.suratclothhouse.com",
+      "admin. trayalife.com",
+      "www.admin. trayalife.com",
     ],
   },
   // Add server configuration for development
   server: {
     host: "0.0.0.0",
     allowedHosts: [
-      "admin.suratclothhouse.com",
-      "www.admin.suratclothhouse.com",
+      "admin. trayalife.com",
+      "www.admin. trayalife.com",
     ],
   },
 });

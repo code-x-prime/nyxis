@@ -409,7 +409,7 @@ export default function AccountPage() {
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Button
                       onClick={() => {
-                        const text = `Join me on Surat Cloth House! Use my referral code: ${referralCode} and get amazing discounts!`;
+                        const text = `Join me on  Traya Life! Use my referral code: ${referralCode} and get amazing discounts!`;
                         if (navigator.share) {
                           navigator.share({
                             title: "Referral Code",

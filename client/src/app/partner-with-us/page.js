@@ -61,7 +61,7 @@ export default function PartnerWithUsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="flex flex-col justify-center">
             <h1 className="text-3xl md:text-4xl font-semibold text-[#0f2b47] mb-4">
-              Partner with Surat Cloth House
+              Partner with  Traya Life
             </h1>
             <p className="text-gray-600 leading-relaxed">
               Grow your business with us. Whether you are a distributor,
@@ -72,7 +72,7 @@ export default function PartnerWithUsPage() {
               <span className="block font-semibold text-[#0f2b47] mb-1">We offer two partnership models:</span>
               <ul className="list-disc list-inside text-gray-700 ml-2">
                 <li><span className="font-semibold">Commission Model</span> – Earn attractive commissions on every sale you generate.</li>
-                <li><span className="font-semibold">Franchise Model</span> – Become a Surat Cloth House franchise partner and grow with us.</li>
+                <li><span className="font-semibold">Franchise Model</span> – Become a  Traya Life franchise partner and grow with us.</li>
               </ul>
               <span className="block text-gray-600 mt-2">Choose the model that fits your business best, or contact us to discuss which option is right for you!</span>
             </p>
