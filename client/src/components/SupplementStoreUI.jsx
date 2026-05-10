@@ -1,0 +1,45 @@
+import React from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+const SupplementStoreUI = () => {
+  const router = useRouter();
+
+  return (
+    <div className="bg-white py-5 md:py-10 px-4">
+      <div className="max-w-7xl mx-auto">
+
+        {/* ---- MOBILE IMAGE (small screens) ---- */}
+        <div
+          className="block md:hidden cursor-pointer"
+          onClick={() => router.push("/products")}
+        >
+          <Image
+            src={"/hero.webp"}
+            width={500}
+            height={500}
+            alt="Sales Mobile"
+            className="w-full h-full object-cover aspect-[9/16]"
+          />
+        </div>
+
+        {/* ---- DESKTOP IMAGE (large screens) ---- */}
+        <div
+          className="hidden md:block cursor-pointer"
+          onClick={() => router.push("/products")}
+        >
+          <Image
+            src={"/hero.webp"}
+            width={1200}
+            height={600}
+            alt="Sales Desktop"
+            className="w-full h-full object-cover aspect-[16/4]"
+          />
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default SupplementStoreUI;
