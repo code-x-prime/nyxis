@@ -16,8 +16,8 @@ export default defineConfig({
     port: 5000,
     host: "0.0.0.0",
     allowedHosts: [
-      "partner. trayalife.com",
-      "www.partner. trayalife.com",
+      "partner.trayalife.com",
+      "www.partner.trayalife.com",
     ],
   },
   // Add server configuration for development
@@ -25,8 +25,8 @@ export default defineConfig({
     port: 5002,
     host: "0.0.0.0",
     allowedHosts: [
-      "partner. trayalife.com",
-      "www.partner. trayalife.com",
+      "partner.trayalife.com",
+      "www.partner.trayalife.com",
     ],
   },
 });
