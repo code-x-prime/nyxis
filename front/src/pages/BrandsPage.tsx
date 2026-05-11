@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { brands } from "@/api/adminService";
-import { useDropzone } from "react-dropzone";
 import {
   Edit,
   Trash2,
@@ -22,7 +21,9 @@ import {
   Tag,
   Package,
   MoreVertical,
+  Images,
 } from "lucide-react";
+import MediaDialog from "@/components/MediaDialog";
 import { getImageUrl } from "@/utils/image";
 import { products } from "@/api/adminService";
 import { MultiSelect } from "@/components/ui/multiselect";
@@ -57,8 +58,9 @@ export default function BrandsPage() {
   const [brandsList, setBrandsList] = useState<Brand[]>([]);
   const [open, setOpen] = useState(false);
   const [editBrand, setEditBrand] = useState<Brand | null>(null);
-  const [form, setForm] = useState({ name: "", image: null as File | null });
+  const [form, setForm] = useState({ name: "", image: null as File | null, imageUrl: "" });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mediaOpen, setMediaOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [assignModalBrand, setAssignModalBrand] = useState<Brand | null>(null);
   const [activeTab, setActiveTab] = useState<string>("ALL");
@@ -91,18 +93,14 @@ export default function BrandsPage() {
     brand.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Dropzone for image upload
-  const onDrop = (acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      setForm((prev) => ({ ...prev, image: acceptedFiles[0] }));
-      setImagePreview(URL.createObjectURL(acceptedFiles[0]));
+  const handleMediaSelect = (selected: any[]) => {
+    if (selected.length > 0) {
+      const item = selected[0];
+      setForm((prev) => ({ ...prev, image: null, imageUrl: item.url }));
+      setImagePreview(item.url);
     }
+    setMediaOpen(false);
   };
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "image/*": [] },
-    multiple: false,
-  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -125,18 +123,20 @@ export default function BrandsPage() {
         await brands.updateBrand(editBrand.id, {
           name: form.name,
           image: form.image || undefined,
+          imageUrl: form.imageUrl || undefined,
           tags: brandTags,
         });
         toast.success(t("brands.messages.update_success"));
       } else {
         await brands.createBrand({
           name: form.name,
-          image: form.image!,
+          image: form.image || undefined,
+          imageUrl: form.imageUrl || undefined,
           tags: brandTags,
         });
         toast.success(t("brands.messages.create_success"));
       }
-      setForm({ name: "", image: null });
+      setForm({ name: "", image: null, imageUrl: "" });
       setImagePreview(null);
       setOpen(false);
       setEditBrand(null);
@@ -151,7 +151,7 @@ export default function BrandsPage() {
   const handleEdit = (brand: Brand) => {
     setEditBrand(brand);
     setBrandTags(brand.tags || []);
-    setForm({ name: brand.name, image: null });
+    setForm({ name: brand.name, image: null, imageUrl: brand.image });
     setImagePreview(getImageUrl(brand.image));
     setOpen(true);
   };
@@ -178,7 +178,7 @@ export default function BrandsPage() {
   const handleDialogClose = () => {
     setOpen(false);
     setEditBrand(null);
-    setForm({ name: "", image: null });
+    setForm({ name: "", image: null, imageUrl: "" });
     setImagePreview(null);
     setBrandTags([]);
   };
@@ -219,7 +219,7 @@ export default function BrandsPage() {
                   className=""
                   onClick={() => {
                     setEditBrand(null);
-                    setForm({ name: "", image: null });
+                    setForm({ name: "", image: null, imageUrl: "" });
                     setImagePreview(null);
                     setBrandTags([]);
                   }}
@@ -256,13 +256,9 @@ export default function BrandsPage() {
                       {t("brands.form.logo_label")}
                     </label>
                     <div
-                      {...getRootProps()}
-                      className={`border-2 border-dashed border-[var(--border-color)] rounded-xl p-8 text-center cursor-pointer transition-colors ${isDragActive
-                        ? "bg-[var(--accent)]/10 border-[var(--accent)]"
-                        : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]"
-                        }`}
+                      onClick={() => setMediaOpen(true)}
+                      className={`border-2 border-dashed border-[var(--border-color)] rounded-xl p-8 text-center cursor-pointer transition-colors bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]`}
                     >
-                      <input {...getInputProps()} />
                       {imagePreview ? (
                         <div className="space-y-2">
                           <img
@@ -276,17 +272,24 @@ export default function BrandsPage() {
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          <Package className="h-12 w-12 mx-auto text-[var(--text-secondary)]" />
+                          <Images className="h-12 w-12 mx-auto text-[var(--text-secondary)]" />
                           <p className="text-sm text-[var(--text-primary)] font-medium">
-                            {t("brands.dropzone.drag_drop")}
+                            Select Brand Logo
                           </p>
                           <p className="text-xs text-[var(--text-secondary)]">
-                            {t("brands.dropzone.click_select")}
+                            From Media Library or Upload
                           </p>
                         </div>
                       )}
                     </div>
                   </div>
+                  <MediaDialog 
+                    open={mediaOpen}
+                    onOpenChange={setMediaOpen}
+                    onSelect={handleMediaSelect}
+                    type="image"
+                    title="Select Brand Logo"
+                  />
                   <div>
                     <label className="text-sm font-medium text-[var(--text-primary)] mb-1.5 block">
                       {t("brands.form.tags_label")}

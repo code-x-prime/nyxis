@@ -108,11 +108,13 @@ export function Navbar() {
                 categories: [
                   {
                     name: `Shop All ${category.name}`,
-                    href: `/products?category=${category.slug}`
+                    href: `/products?category=${category.slug}`,
+                    image: category.image || null,
                   },
                   ...category.subCategories.map((subCat) => ({
                     name: subCat.name,
                     href: `/products?category=${category.slug}&subCategory=${subCat.slug}`,
+                    image: subCat.image || null,
                   })),
                 ],
               };
@@ -467,26 +469,41 @@ export function Navbar() {
                   {item.megaMenu && (
                     <div
                       className={cn(
-                        "absolute left-1/2 -translate-x-1/2 top-full w-[280px] bg-white rounded-xl shadow-dropdown border border-trayalife-gray-200 transition-all duration-200 origin-top z-50",
+                        "absolute left-1/2 -translate-x-1/2 top-full w-[300px] bg-white rounded-xl shadow-dropdown border border-trayalife-gray-200 transition-all duration-200 origin-top z-50",
                         activeMenu === item.name
                           ? "opacity-100 scale-100 visible"
                           : "opacity-0 scale-95 invisible pointer-events-none"
                       )}
                     >
-                      <div className="p-5">
+                      <div className="p-4">
                         <h3 className="text-xs font-bold text-trayalife-500 tracking-widest mb-3 uppercase">
                           Shop by Category
                         </h3>
-                        <ul className="space-y-1">
+                        <ul className="space-y-0.5">
                           {item.megaMenu.categories.map((cat) => (
                             <li key={cat.href}>
                               <Link
                                 href={cat.href}
-                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-trayalife-500 hover:bg-trayalife-50 px-3 py-2 rounded-lg transition-all duration-150"
+                                className="flex items-center gap-3 text-sm text-gray-600 hover:text-trayalife-500 hover:bg-trayalife-50 px-2 py-2 rounded-lg transition-all duration-150 group"
                                 onClick={() => setActiveMenu(null)}
                               >
-                                <FiChevronRight className="h-3 w-3 opacity-40" />
-                                {cat.name}
+                                {cat.image ? (
+                                  <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 border border-trayalife-gray-200 bg-trayalife-off-white">
+                                    <Image
+                                      src={cat.image}
+                                      alt={cat.name}
+                                      width={32}
+                                      height={32}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-8 h-8 rounded-md flex-shrink-0 border border-trayalife-gray-200 bg-trayalife-50 flex items-center justify-center">
+                                    <FiGrid className="h-3.5 w-3.5 text-trayalife-gray-400" />
+                                  </div>
+                                )}
+                                <span className="flex-1 leading-tight">{cat.name}</span>
+                                <FiChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-40 transition-opacity" />
                               </Link>
                             </li>
                           ))}
@@ -658,9 +675,24 @@ export function Navbar() {
                             <Link
                               key={cat.href}
                               href={cat.href}
-                              className="block px-7 py-2.5 text-gray-600 text-sm hover:bg-trayalife-100 hover:text-trayalife-500"
+                              className="flex items-center gap-3 px-5 py-2.5 text-gray-600 text-sm hover:bg-trayalife-100 hover:text-trayalife-500 transition-colors"
                               onClick={() => setIsMenuOpen(false)}
                             >
+                              {cat.image ? (
+                                <div className="w-7 h-7 rounded-md overflow-hidden flex-shrink-0 border border-trayalife-gray-200 bg-trayalife-off-white">
+                                  <Image
+                                    src={cat.image}
+                                    alt={cat.name}
+                                    width={28}
+                                    height={28}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-7 h-7 rounded-md flex-shrink-0 border border-trayalife-gray-200 bg-trayalife-50 flex items-center justify-center">
+                                  <FiGrid className="h-3 w-3 text-trayalife-gray-400" />
+                                </div>
+                              )}
                               {cat.name}
                             </Link>
                           ))}

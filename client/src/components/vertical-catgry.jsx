@@ -10,7 +10,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 
-import { fetchApi } from "@/lib/utils";
+import { fetchApi, getImageUrl } from "@/lib/utils";
 
 const VerticalCategoriesCarousel = () => {
   const [categories, setCategories] = useState([]);
@@ -76,7 +76,7 @@ const VerticalCategoriesCarousel = () => {
           ) : (
             <div className="relative w-full h-full overflow-hidden bg-gray-50 flex items-center justify-center">
               <Image
-                src={category.image || "/placeholder.jpg"}
+                src={getImageUrl(category.image)}
                 alt={category.name || "Category"}
                 width={200}
                 height={200}

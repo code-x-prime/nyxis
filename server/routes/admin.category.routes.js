@@ -190,7 +190,7 @@ router.patch(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, description } = req.body;
+      const { name, description, imageUrl: bodyImageUrl } = req.body;
 
       // Check if category exists
       const existingCategory = await prisma.category.findUnique({
@@ -270,6 +270,8 @@ router.patch(
           acl: "public-read",
         });
         updateData.image = imageKey;
+      } else if (bodyImageUrl) {
+        updateData.image = bodyImageUrl;
       }
 
       // Update category

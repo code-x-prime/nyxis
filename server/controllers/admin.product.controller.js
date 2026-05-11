@@ -826,13 +826,17 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         }
       }
 
-      // Normalize image files (fields() gives req.files.images, array() gives req.files)
-      const imageFiles = req.files?.images || (Array.isArray(req.files) ? req.files : []);
+      // Normalize files from any field
+      const allFiles = Array.isArray(req.files) ? req.files : [];
+      const imageFiles = allFiles.filter(f => f.fieldname === "images");
+      const productVideoFile = allFiles.find(f => f.fieldname === "video");
+      const productImageUrls = req.body.productImageUrls ? (typeof req.body.productImageUrls === 'string' ? JSON.parse(req.body.productImageUrls) : req.body.productImageUrls) : [];
+      const productVideoUrl = req.body.videoUrl;
 
       // Upload product images if provided
-      if (imageFiles.length > 0) {
+      if (imageFiles.length > 0 || productImageUrls.length > 0) {
         console.log(
-          `📸 Uploading ${imageFiles.length} images for product ${newProduct.id}`
+          `📸 Processing ${imageFiles.length} uploaded files and ${productImageUrls.length} library URLs for product ${newProduct.id}`
         );
         let primaryImageIndex = 0;
 
@@ -840,54 +844,47 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         if (req.body.primaryImageIndex !== undefined) {
           try {
             primaryImageIndex = parseInt(req.body.primaryImageIndex);
-            // Ensure it's within valid range
-            if (
-              isNaN(primaryImageIndex) ||
-              primaryImageIndex < 0 ||
-              primaryImageIndex >= imageFiles.length
-            ) {
-              primaryImageIndex = 0;
-            }
           } catch (error) {
             console.error("Error parsing primaryImageIndex:", error);
             primaryImageIndex = 0;
           }
         }
 
+        let currentOrder = 0;
+
+        // Process Library URLs first
+        for (const url of productImageUrls) {
+          await prisma.productImage.create({
+            data: {
+              productId: newProduct.id,
+              url: url,
+              alt: `${newProduct.name} - Library Image`,
+              isPrimary: currentOrder === primaryImageIndex,
+              order: currentOrder++,
+            },
+          });
+        }
+
+        // Process Uploaded Files
         for (let i = 0; i < imageFiles.length; i++) {
           const file = imageFiles[i];
-          console.log(`📸 Processing image ${i + 1}: ${file.originalname}`);
           try {
-            console.log(
-              `📸 Starting upload for file: ${file.originalname}, size: ${file.size} bytes`
-            );
             const imageUrl = await processAndUploadImage(
               file,
               `products/${newProduct.id}`
             );
-            console.log(`✅ Image uploaded to S3: ${imageUrl}`);
 
-            const savedImage = await prisma.productImage.create({
+            await prisma.productImage.create({
               data: {
                 productId: newProduct.id,
                 url: imageUrl,
-                alt: `${newProduct.name} - Image ${i + 1}`,
-                isPrimary: i === primaryImageIndex,
-                order: i,
+                alt: `${newProduct.name} - Uploaded Image ${i + 1}`,
+                isPrimary: currentOrder === primaryImageIndex,
+                order: currentOrder++,
               },
             });
-            console.log(`✅ Image saved to database with ID: ${savedImage.id}`);
           } catch (error) {
             console.error(`❌ Error uploading image ${i + 1}:`, error);
-            console.error(`❌ Error details:`, {
-              message: error.message,
-              stack: error.stack,
-              filename: file?.originalname,
-              filesize: file?.size,
-            });
-            // Don't throw error to prevent product creation failure
-            // Just log the error and continue
-            console.warn(`⚠️ Continuing product creation without this image`);
           }
         }
       } else if (req.file) {
@@ -907,18 +904,13 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         });
       }
 
-      // Upload product video if provided (max 10MB)
-      const videoFile = req.files?.video?.[0];
-      if (videoFile) {
+      // Handle product video (either file or URL)
+      if (productVideoFile) {
         const maxVideoSize = 10 * 1024 * 1024; // 10MB
         const allowedTypes = ["video/mp4", "video/webm"];
-        if (videoFile.size > maxVideoSize) {
-          console.warn(`⚠️ Video file too large (${videoFile.size} bytes), skipping`);
-        } else if (!allowedTypes.includes(videoFile.mimetype)) {
-          console.warn(`⚠️ Invalid video type ${videoFile.mimetype}, skipping`);
-        } else {
+        if (productVideoFile.size <= maxVideoSize && allowedTypes.includes(productVideoFile.mimetype)) {
           try {
-            const videoUrl = await uploadVideo(videoFile);
+            const videoUrl = await uploadVideo(productVideoFile);
             await prisma.product.update({
               where: { id: newProduct.id },
               data: { videoUrl },
@@ -928,6 +920,12 @@ export const createProduct = asyncHandler(async (req, res, next) => {
             console.error("❌ Error uploading product video:", err);
           }
         }
+      } else if (productVideoUrl) {
+        await prisma.product.update({
+          where: { id: newProduct.id },
+          data: { videoUrl: productVideoUrl },
+        });
+        console.log(`✅ Product video set from library: ${productVideoUrl}`);
       }
 
       // Process variant images if any (variant images may come from variantImages_X fields)
@@ -936,34 +934,52 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         : req.files
           ? Object.values(req.files).flat()
           : [];
-      if (variants.length > 0 && allFilesForVariants.length > 0) {
-        console.log("🔍 Processing variant images...");
+      if (variants.length > 0) {
+        console.log("🔍 Processing variant media...");
 
-        const variantImageFiles = {};
-        allFilesForVariants.forEach((file) => {
-          // Check if this is a variant image file
-          const variantMatch = file.fieldname.match(/^variantImages_(\d+)$/);
-          if (variantMatch) {
-            const variantIndex = parseInt(variantMatch[1]);
-            if (!variantImageFiles[variantIndex]) {
-              variantImageFiles[variantIndex] = [];
-            }
-            variantImageFiles[variantIndex].push(file);
+        const variantFiles = {};
+        allFiles.forEach((file) => {
+          const imgMatch = file.fieldname.match(/^variantImages_(\d+)$/);
+          const vidMatch = file.fieldname.match(/^variantVideo_(\d+)$/);
+          
+          if (imgMatch) {
+            const idx = parseInt(imgMatch[1]);
+            if (!variantFiles[idx]) variantFiles[idx] = { images: [], video: null };
+            variantFiles[idx].images.push(file);
+          } else if (vidMatch) {
+            const idx = parseInt(vidMatch[1]);
+            if (!variantFiles[idx]) variantFiles[idx] = { images: [], video: null };
+            variantFiles[idx].video = file;
           }
         });
 
-        // Upload images for each variant
-        for (const variantIndex in variantImageFiles) {
-          const files = variantImageFiles[variantIndex];
-          const variant = variants[parseInt(variantIndex)];
+        // Process images for each variant (both library URLs and uploaded files)
+        for (let i = 0; i < variants.length; i++) {
+          const variant = variants[i];
+          if (!variant._dbId) continue;
 
-          if (variant && variant._dbId) {
-            console.log(
-              `📸 Uploading ${files.length} images for variant ${variant._dbId}`
-            );
+          let currentVariantOrder = 0;
 
-            for (let i = 0; i < files.length; i++) {
-              const file = files[i];
+          // 1. Process Library URLs if any
+          if (variant.imageUrls && Array.isArray(variant.imageUrls)) {
+            for (const url of variant.imageUrls) {
+              await prisma.productVariantImage.create({
+                data: {
+                  variantId: variant._dbId,
+                  url: url,
+                  alt: `${variant.name || newProduct.name} - Variant Library Image`,
+                  isPrimary: currentVariantOrder === 0,
+                  order: currentVariantOrder++,
+                },
+              });
+            }
+          }
+
+          // 2. Process Uploaded Files if any
+          const files = variantFiles[i]?.images;
+          if (files && files.length > 0) {
+            for (let j = 0; j < files.length; j++) {
+              const file = files[j];
               try {
                 const imageUrl = await processAndUploadImage(
                   file,
@@ -974,18 +990,36 @@ export const createProduct = asyncHandler(async (req, res, next) => {
                   data: {
                     variantId: variant._dbId,
                     url: imageUrl,
-                    alt: `${variant.name || newProduct.name} - Variant Image ${i + 1
-                      }`,
-                    isPrimary: i === 0, // First image is primary
-                    order: i, // Set proper order
+                    alt: `${variant.name || newProduct.name} - Variant Uploaded Image ${j + 1}`,
+                    isPrimary: currentVariantOrder === 0,
+                    order: currentVariantOrder++,
                   },
                 });
-
-                console.log(`✅ Variant image uploaded: ${imageUrl}`);
               } catch (error) {
                 console.error(`❌ Error uploading variant image:`, error);
               }
             }
+          }
+
+          // 3. Process Variant Video (file or URL)
+          const variantVideoFile = variantFiles[i]?.video;
+          const variantVideoUrl = variant.videoUrl;
+
+          if (variantVideoFile) {
+            try {
+              const videoUrl = await uploadVideo(variantVideoFile);
+              await prisma.productVariant.update({
+                where: { id: variant._dbId },
+                data: { videoUrl },
+              });
+            } catch (err) {
+              console.error("❌ Error uploading variant video:", err);
+            }
+          } else if (variantVideoUrl) {
+            await prisma.productVariant.update({
+              where: { id: variant._dbId },
+              data: { videoUrl: variantVideoUrl },
+            });
           }
         }
       }
@@ -1117,6 +1151,8 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     keywords,
     ourProduct,
   } = req.body;
+
+  const allFiles = Array.isArray(req.files) ? req.files : [];
 
   // Check if product exists
   const product = await prisma.product.findUnique({
@@ -1698,7 +1734,26 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
               quantity: parsedQuantity,
               isActive:
                 variant.isActive !== undefined ? variant.isActive : true,
+              videoUrl: variant.videoUrl || undefined,
             };
+
+            // Handle variant video upload for existing variant
+            const variantVideoFile = allFiles.find(f => f.fieldname === `variantVideo_${variants.indexOf(variant)}`);
+            if (variantVideoFile) {
+              try {
+                const oldVariant = await prisma.productVariant.findUnique({ 
+                  where: { id: variant.id }, 
+                  select: { videoUrl: true } 
+                });
+                if (oldVariant?.videoUrl) {
+                  await deleteFromS3(oldVariant.videoUrl);
+                }
+                const videoUrl = await uploadToS3(variantVideoFile);
+                updateData.videoUrl = videoUrl;
+              } catch (error) {
+                console.error(`Error uploading variant video: ${error.message}`);
+              }
+            }
 
             // Handle attributes if provided
             if (
@@ -1782,6 +1837,52 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
                     price: parseFloat(slab.price)
                   }))
                 });
+              }
+            }
+
+            // Handle variant images (Library URLs and Uploaded Files) for existing variant
+            let currentVariantOrder = await prisma.productVariantImage.count({
+              where: { variantId: variant.id }
+            });
+
+            // 1. Process Library URLs if any
+            if (variant.imageUrls && Array.isArray(variant.imageUrls)) {
+              for (const url of variant.imageUrls) {
+                await prisma.productVariantImage.create({
+                  data: {
+                    variantId: variant.id,
+                    url: url,
+                    alt: `${name} - Variant Library Image`,
+                    isPrimary: currentVariantOrder === 0,
+                    order: currentVariantOrder++,
+                  },
+                });
+              }
+            }
+
+            // 2. Process Uploaded Files if any
+            const variantImageFiles = allFiles.filter(f => f.fieldname === `variantImages_${variants.indexOf(variant)}`);
+            if (variantImageFiles.length > 0) {
+              for (let j = 0; j < variantImageFiles.length; j++) {
+                const file = variantImageFiles[j];
+                try {
+                  const imageUrl = await processAndUploadImage(
+                    file,
+                    `products/${productId}/variants/${variant.id}`
+                  );
+
+                  await prisma.productVariantImage.create({
+                    data: {
+                      variantId: variant.id,
+                      url: imageUrl,
+                      alt: `${name} - Variant Uploaded Image ${j + 1}`,
+                      isPrimary: currentVariantOrder === 0,
+                      order: currentVariantOrder++,
+                    },
+                  });
+                } catch (error) {
+                  console.error(`❌ Error uploading variant image:`, error);
+                }
               }
             }
           } else {
@@ -1891,7 +1992,19 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
               quantity: parsedQuantity,
               isActive:
                 variant.isActive !== undefined ? variant.isActive : true,
+              videoUrl: variant.videoUrl || undefined,
             };
+
+            // Handle variant video upload for new variant
+            const variantVideoFile = allFiles.find(f => f.fieldname === `variantVideo_${variants.indexOf(variant)}`);
+            if (variantVideoFile) {
+              try {
+                const videoUrl = await uploadToS3(variantVideoFile);
+                createData.videoUrl = videoUrl;
+              } catch (error) {
+                console.error(`Error uploading variant video for new variant: ${error.message}`);
+              }
+            }
 
             // Handle attributes if provided
             if (
@@ -1939,6 +2052,50 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
                   price: parseFloat(slab.price)
                 }))
               });
+            }
+
+            // Handle variant images (Library URLs and Uploaded Files) for new variant
+            let currentVariantOrder = 0;
+
+            // 1. Process Library URLs if any
+            if (variant.imageUrls && Array.isArray(variant.imageUrls)) {
+              for (const url of variant.imageUrls) {
+                await prisma.productVariantImage.create({
+                  data: {
+                    variantId: newVariantDb.id,
+                    url: url,
+                    alt: `${name} - Variant Library Image`,
+                    isPrimary: currentVariantOrder === 0,
+                    order: currentVariantOrder++,
+                  },
+                });
+              }
+            }
+
+            // 2. Process Uploaded Files if any
+            const variantImageFiles = allFiles.filter(f => f.fieldname === `variantImages_${variants.indexOf(variant)}`);
+            if (variantImageFiles.length > 0) {
+              for (let j = 0; j < variantImageFiles.length; j++) {
+                const file = variantImageFiles[j];
+                try {
+                  const imageUrl = await processAndUploadImage(
+                    file,
+                    `products/${productId}/variants/${newVariantDb.id}`
+                  );
+
+                  await prisma.productVariantImage.create({
+                    data: {
+                      variantId: newVariantDb.id,
+                      url: imageUrl,
+                      alt: `${name} - Variant Uploaded Image ${j + 1}`,
+                      isPrimary: currentVariantOrder === 0,
+                      order: currentVariantOrder++,
+                    },
+                  });
+                } catch (error) {
+                  console.error(`❌ Error uploading variant image:`, error);
+                }
+              }
             }
           }
         }
@@ -2266,11 +2423,14 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
       }
 
 
-      // Normalize image files (fields() gives req.files.images)
-      const imageFiles = req.files?.images || (Array.isArray(req.files) ? req.files : []);
+      // Normalize files from any field
+      const imageFiles = allFiles.filter(f => f.fieldname === "images");
+      const productVideoFile = allFiles.find(f => f.fieldname === "video");
+      const productVideoUrlFromLibrary = req.body.videoUrl;
+      const productImageUrls = req.body.productImageUrls ? (typeof req.body.productImageUrls === 'string' ? JSON.parse(req.body.productImageUrls) : req.body.productImageUrls) : [];
 
-      // Handle image uploads if provided
-      if (imageFiles.length > 0) {
+      // Handle image uploads or library URLs if provided
+      if (imageFiles.length > 0 || productImageUrls.length > 0) {
         const primaryImageIndex = req.body.primaryImageIndex
           ? parseInt(req.body.primaryImageIndex)
           : 0;
@@ -2295,6 +2455,21 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
           }
         }
 
+        let currentOrder = await prisma.productImage.count({ where: { productId } });
+
+        // Process Library URLs
+        for (const url of productImageUrls) {
+          await prisma.productImage.create({
+            data: {
+              productId,
+              url: url,
+              alt: `${updatedProduct.name} - Library Image`,
+              isPrimary: currentOrder === primaryImageIndex,
+              order: currentOrder++,
+            },
+          });
+        }
+
         // Upload new images
         for (let i = 0; i < imageFiles.length; i++) {
           const file = imageFiles[i];
@@ -2308,8 +2483,8 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
               productId,
               url: imageUrl,
               alt: `${updatedProduct.name} - Image ${i + 1}`,
-              isPrimary: i === primaryImageIndex,
-              order: i,
+              isPrimary: currentOrder === primaryImageIndex,
+              order: currentOrder++,
             },
           });
         }
@@ -2361,22 +2536,17 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
         }
       }
 
-      // Upload product video if provided (max 10MB)
-      const videoFile = req.files?.video?.[0];
-      if (videoFile) {
+      // Handle product video (either file or URL)
+      if (productVideoFile) {
         const maxVideoSize = 10 * 1024 * 1024; // 10MB
         const allowedTypes = ["video/mp4", "video/webm"];
-        if (videoFile.size > maxVideoSize) {
-          console.warn(`⚠️ Video file too large (${videoFile.size} bytes), skipping`);
-        } else if (!allowedTypes.includes(videoFile.mimetype)) {
-          console.warn(`⚠️ Invalid video type ${videoFile.mimetype}, skipping`);
-        } else {
+        if (productVideoFile.size <= maxVideoSize && allowedTypes.includes(productVideoFile.mimetype)) {
           try {
             // Delete old video if exists
             if (product.videoUrl) {
               await deleteFromS3(product.videoUrl);
             }
-            const videoUrl = await uploadVideo(videoFile);
+            const videoUrl = await uploadVideo(productVideoFile);
             await prisma.product.update({
               where: { id: productId },
               data: { videoUrl },
@@ -2385,6 +2555,18 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
           } catch (err) {
             console.error("❌ Error uploading product video:", err);
           }
+        }
+      } else if (productVideoUrlFromLibrary) {
+        // Only update if it's different from current
+        if (productVideoUrlFromLibrary !== product.videoUrl) {
+          if (product.videoUrl) {
+            await deleteFromS3(product.videoUrl);
+          }
+          await prisma.product.update({
+            where: { id: productId },
+            data: { videoUrl: productVideoUrlFromLibrary },
+          });
+          console.log(`✅ Product video updated from library: ${productVideoUrlFromLibrary}`);
         }
       }
 
@@ -2596,10 +2778,10 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
 // Upload product image
 export const uploadProductImage = asyncHandler(async (req, res, next) => {
   const { productId } = req.params;
-  const { isPrimary } = req.body;
+  const { isPrimary, imageUrl: existingImageUrl } = req.body;
 
-  if (!req.file) {
-    throw new ApiError(400, "Image file is required");
+  if (!req.file && !existingImageUrl) {
+    throw new ApiError(400, "Image file or imageUrl is required");
   }
 
   // Check if product exists
@@ -2615,11 +2797,15 @@ export const uploadProductImage = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    // Process and upload image to S3
-    const imageUrl = await processAndUploadImage(
-      req.file,
-      `products/${productId}`
-    );
+    let imageUrl = existingImageUrl;
+    
+    // Process and upload image to S3 only if no existingImageUrl is provided
+    if (!imageUrl && req.file) {
+      imageUrl = await processAndUploadImage(
+        req.file,
+        `products/${productId}`
+      );
+    }
 
     // Use a transaction to ensure all database operations complete together
     const result = await prisma.$transaction(async (tx) => {
@@ -3677,7 +3863,7 @@ export const deleteWeight = asyncHandler(async (req, res, next) => {
 // Upload variant image
 export const uploadVariantImage = asyncHandler(async (req, res, next) => {
   const { variantId } = req.params;
-  const { isPrimary, order } = req.body;
+  const { isPrimary, order, imageUrl: existingImageUrl } = req.body;
 
   // Check if variant exists
   const variant = await prisma.productVariant.findUnique({
@@ -3693,16 +3879,20 @@ export const uploadVariantImage = asyncHandler(async (req, res, next) => {
     throw new ApiError(404, "Product variant not found");
   }
 
-  if (!req.file) {
-    throw new ApiError(400, "Image file is required");
+  if (!req.file && !existingImageUrl) {
+    throw new ApiError(400, "Image file or imageUrl is required");
   }
 
   try {
-    // Upload to S3 using existing function
-    const imageUrl = await processAndUploadImage(
-      req.file,
-      `variants/${variantId}`
-    );
+    let imageUrl = existingImageUrl;
+    
+    // Process and upload image to S3 only if no existingImageUrl is provided
+    if (!imageUrl && req.file) {
+      imageUrl = await processAndUploadImage(
+        req.file,
+        `variants/${variantId}`
+      );
+    }
 
     // Handle image creation with retry logic for race conditions
     let retryCount = 0;

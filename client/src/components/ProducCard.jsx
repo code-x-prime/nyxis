@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency, fetchApi } from "@/lib/utils";
+import { formatCurrency, fetchApi, getImageUrl } from "@/lib/utils";
 import { FiHeart } from "react-icons/fi";
 import { BsStarFill } from "react-icons/bs";
 import Image from "next/image";
@@ -10,13 +10,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import ProductQuickView from "./ProductQuickView";
-
-// Helper function to format image URLs correctly
-const getImageUrl = (image) => {
-  if (!image) return "/placeholder.jpg";
-  if (image.startsWith("http")) return image;
-  return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
-};
 
 // Helper function to calculate discount percentage
 const calculateDiscountPercentage = (regularPrice, salePrice) => {
@@ -266,6 +259,19 @@ const ProductCard = ({ product }) => {
   };
 
   const variantInfo = getVariantInfo();
+  const isBestseller =
+    product.isBestseller ||
+    (product.tags &&
+      Array.isArray(product.tags) &&
+      product.tags.some((tag) =>
+        String(tag).toLowerCase().includes("bestseller")
+      ));
+  const productSubtitle =
+    product.shortDescription ||
+    product.tagline ||
+    product.subtitle ||
+    product.metaDescription ||
+    "";
 
   // Get price - Universal handler for all API formats
   const parsePrice = (value) => {
@@ -426,24 +432,12 @@ const ProductCard = ({ product }) => {
         </div>
       </Link>
 
-      {/* Wishlist button — absolute, overlaps image/badge */}
-      <button
-        className={`absolute z-10 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-sm border border-[#dde5e2] hover:border-trayalife-500 transition-all duration-200 ${discountPercent > 0 ? "top-10 right-2" : "top-2 right-2"
-          }`}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleAddToWishlist(product, e);
-        }}
-        disabled={isAddingToWishlist[product.id]}
-        aria-label={wishlistItems[product.id] ? "Remove from wishlist" : "Add to wishlist"}
-      >
-        <FiHeart
-          className={`h-3.5 w-3.5 transition-colors ${wishlistItems[product.id]
-            ? "text-red-500 fill-current"
-            : "text-[#8fa89f]"
-            }`}
-        />
-      </button>
+      {/* Sale badge */}
+      {isBestseller && (
+        <div className="absolute top-2 left-2 z-10 rounded-full bg-[#16a34a] px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
+          Bestseller
+        </div>
+      )}
 
       {/* Card body */}
       <div className="p-3">
@@ -476,40 +470,59 @@ const ProductCard = ({ product }) => {
         </Link>
 
         {/* Price row */}
-        <div className="flex items-center gap-1.5 flex-wrap mb-3">
+        <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
           {priceVisibilitySettings?.hidePricesForGuests && !isAuthenticated ? (
             <span className="text-xs text-amber-600 font-medium">Login to view price</span>
           ) : priceVisibilitySettings === null ? (
             <span className="text-xs text-amber-600 font-medium">Login to view price</span>
           ) : (
-            <>
-              <span className="text-base font-bold text-[#0d1f1b] font-jost">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-lg font-bold text-[#0d1f1b] font-jost">
                 {formatCurrency(currentPrice)}
               </span>
               {hasSale && originalPrice && currentPrice < originalPrice && (
-                <span className="text-[0.7rem] line-through text-[#8fa89f]">
+                <span className="text-[0.75rem] line-through text-[#8fa89f]">
                   {formatCurrency(originalPrice)}
                 </span>
               )}
               {discountPercent > 0 && (
-                <span className="text-[0.58rem] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                <span className="text-[0.65rem] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
                   {discountPercent}% off
                 </span>
               )}
-            </>
+            </div>
           )}
         </div>
 
-        {/* Add to Cart — opens Quick View modal where cart action happens */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleQuickView(product);
-          }}
-          className="w-full flex items-center justify-center gap-1 bg-[#166454] hover:bg-[#0f4d3f] text-white text-[0.7rem] font-bold py-2 rounded-lg transition-all duration-200 font-jost shadow-[0_2px_8px_rgba(22,100,84,0.2)] hover:shadow-[0_4px_12px_rgba(22,100,84,0.3)]"
-        >
-          Add to Cart <span className="text-base font-normal">+</span>
-        </button>
+        {productSubtitle && (
+          <p className="text-sm text-[#4a6059] leading-snug mb-3 line-clamp-2">
+            {productSubtitle}
+          </p>
+        )}
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToWishlist(product, e);
+            }}
+            disabled={isAddingToWishlist[product.id]}
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-[#dde5e2] bg-white text-[#4a6059] hover:border-trayalife-500 hover:text-red-500 transition-all duration-200 shadow-sm"
+            aria-label={wishlistItems[product.id] ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <FiHeart className={`h-4 w-4 ${wishlistItems[product.id] ? "text-red-500" : "text-current"}`} />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleQuickView(product);
+            }}
+            className="flex-1 inline-flex items-center justify-center gap-1 bg-[#166454] hover:bg-[#0f4d3f] text-white text-sm font-bold py-2 rounded-xl transition-all duration-200 font-jost shadow-[0_2px_8px_rgba(22,100,84,0.2)] hover:shadow-[0_4px_12px_rgba(22,100,84,0.3)]"
+          >
+            Add to Cart <span className="text-base font-normal">+</span>
+          </button>
+        </div>
 
       </div>
 

@@ -53,10 +53,7 @@ router.post(
   "/products",
   verifyAdminJWT,
   hasPermission("products", "create"),
-  uploadFiles.fields([
-    { name: "images", maxCount: 20 },
-    { name: "video", maxCount: 1 },
-  ]),
+  uploadFiles.any(),
   createProduct
 );
 
@@ -64,10 +61,7 @@ router.patch(
   "/products/:productId",
   verifyAdminJWT,
   hasPermission("products", "update"),
-  uploadFiles.fields([
-    { name: "images", maxCount: 20 },
-    { name: "video", maxCount: 1 },
-  ]),
+  uploadFiles.any(),
   updateProduct
 );
 

@@ -189,19 +189,22 @@ export async function deleteFile(fileUrlOrKey) {
 /**
  * Get public URL for a file key (sync - uses cached config from initStorageConfig)
  */
-export function getFileUrl(keyOrFilename) {
-    if (!keyOrFilename) return null;
-    // If already full URL, return as-is (backward compat with existing data)
-    if (keyOrFilename.startsWith("http")) return keyOrFilename;
+export function getFileUrl(key) {
+    if (!key) return null;
+    
+    // If key is already a full URL, return it as is
+    if (typeof key === 'string' && key.startsWith('http')) {
+        return key;
+    }
 
-    const key = keyOrFilename.startsWith("/") ? keyOrFilename.slice(1) : keyOrFilename;
+    const cleanKey = key.startsWith("/") ? key.slice(1) : key;
 
     // Fallback: when DB config not set, use env vars for backward compat
     if (!_cachedConfig || !_cachedConfig.activeProvider) {
         if (process.env.SPACES_BUCKET && process.env.SPACES_REGION) {
             const cdn = process.env.SPACES_CDN_URL;
-            if (cdn) return `${cdn.replace(/\/$/, "")}/${key}`;
-            return `https://${process.env.SPACES_BUCKET}.${process.env.SPACES_REGION}.digitaloceanspaces.com/${key}`;
+            if (cdn) return `${cdn.replace(/\/$/, "")}/${cleanKey}`;
+            return `https://${process.env.SPACES_BUCKET}.${process.env.SPACES_REGION}.digitaloceanspaces.com/${cleanKey}`;
         }
         return null;
     }
@@ -210,23 +213,29 @@ export function getFileUrl(keyOrFilename) {
 
     if (config.activeProvider === "DIGITAL_OCEAN") {
         if (config.spacesCdnUrl) {
-            return `${config.spacesCdnUrl.replace(/\/$/, "")}/${key}`;
+            return `${config.spacesCdnUrl.replace(/\/$/, "")}/${cleanKey}`;
         }
-        return `https://${config.spacesBucket}.${config.spacesRegion || "blr1"}.digitaloceanspaces.com/${key}`;
+        return `https://${config.spacesBucket}.${config.spacesRegion || "blr1"}.digitaloceanspaces.com/${cleanKey}`;
     }
 
     if (config.activeProvider === "CLOUDFLARE_R2") {
         if (config.r2PublicUrl) {
-            return `${config.r2PublicUrl.replace(/\/$/, "")}/${key}`;
+            return `${config.r2PublicUrl.replace(/\/$/, "")}/${cleanKey}`;
         }
-        return `https://${config.r2BucketName}.r2.cloudflarestorage.com/${key}`;
+        // R2 S3-compatible URLs are not usually public, but we'll return a better-formatted one
+        return `https://${config.r2AccountId}.r2.cloudflarestorage.com/${config.r2BucketName}/${cleanKey}`;
     }
 
     if (config.activeProvider === "AWS_S3") {
         if (config.s3PublicUrl) {
-            return `${config.s3PublicUrl.replace(/\/$/, "")}/${key}`;
+            return `${config.s3PublicUrl.replace(/\/$/, "")}/${cleanKey}`;
         }
-        return `https://${config.s3BucketName}.s3.${config.s3Region}.amazonaws.com/${key}`;
+        return `https://${config.s3BucketName}.s3.${config.s3Region}.amazonaws.com/${cleanKey}`;
+    }
+
+    // If no provider matched but we have a key and BASE_URL, use it for local development fallback
+    if (process.env.BASE_URL) {
+        return `${process.env.BASE_URL.replace(/\/$/, "")}/${cleanKey}`;
     }
 
     return null;

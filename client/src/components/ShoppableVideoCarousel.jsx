@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { fetchApi, formatCurrency } from "@/lib/utils";
+import { fetchApi, formatCurrency, getImageUrl } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 import { FiEye as Eye, FiPlay as Play } from "react-icons/fi";
 
@@ -186,7 +186,7 @@ export default function ShoppableVideoCarousel() {
                     {item.mediaType === "UPLOAD" && item.mediaUrl ? (
                       item.mediaUrl.match(/\.(mp4|webm)/i) ? (
                         <video
-                          src={item.mediaUrl}
+                          src={getImageUrl(item.mediaUrl)}
                           className="w-full h-full object-cover"
                           muted
                           loop
@@ -194,7 +194,7 @@ export default function ShoppableVideoCarousel() {
                         />
                       ) : (
                         <img
-                          src={item.mediaUrl}
+                          src={getImageUrl(item.mediaUrl)}
                           alt={item.product?.name || "Product"}
                           className="w-full h-full object-cover"
                         />

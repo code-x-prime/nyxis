@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { fetchApi } from "@/lib/utils";
+import { fetchApi, getImageUrl } from "@/lib/utils";
 import { RiLeafLine } from "react-icons/ri";
 
 const CategoryCard = ({ category }) => {
@@ -22,7 +22,7 @@ const CategoryCard = ({ category }) => {
           </div>
         ) : (
           <Image
-            src={category.image || "/placeholder.jpg"}
+            src={getImageUrl(category.image)}
             alt={category.name || "Category"}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"

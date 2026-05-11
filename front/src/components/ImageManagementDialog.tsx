@@ -150,6 +150,7 @@ export default function ImageManagementDialog({
         "image/png": [],
         "image/webp": [],
         "image/gif": [],
+        "image/avif": [],
       },
       maxSize: 10 * 1024 * 1024, // 10MB
       multiple: true,

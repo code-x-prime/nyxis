@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ClientOnly } from "@/components/client-only";
 import { DynamicIcon } from "@/components/dynamic-icon";
-import { fetchApi, formatCurrency, formatDate } from "@/lib/utils";
+import { fetchApi, formatCurrency, formatDate, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 
 export default function OrderDetailsPage({ params }) {
@@ -440,7 +440,7 @@ export default function OrderDetailsPage({ params }) {
                           <Image
                             width={80}
                             height={80}
-                            src={item.image}
+                            src={getImageUrl(item.image)}
                             alt={item.name}
                             className="w-full h-full object-cover"
                           />

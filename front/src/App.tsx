@@ -46,6 +46,7 @@ import SettingsPage from "./pages/SettingsPage";
 import MarketingSettingsPage from "./pages/MarketingSettingsPage";
 import TawkToSettingsPage from "./pages/TawkToSettingsPage";
 import SiteSettingsPage from "./pages/SiteSettingsPage";
+import MediaManagerPage from "./pages/MediaManagerPage";
 import { LanguageProvider } from "./context/LanguageContext";
 
 // Protected Route Component
@@ -375,6 +376,17 @@ const App = () => {
                   action={Action.UPDATE}
                 >
                   <SiteSettingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="media"
+              element={
+                <ProtectedRoute
+                  resource={Resource.SETTINGS}
+                  action={Action.UPDATE}
+                >
+                  <MediaManagerPage />
                 </ProtectedRoute>
               }
             />

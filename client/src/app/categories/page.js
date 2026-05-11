@@ -3,19 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { fetchApi } from "@/lib/utils";
+import { fetchApi, getImageUrl } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { FiAlertCircle as AlertCircle, FiArrowRight as ArrowRight, FiPackage as Package } from "react-icons/fi";
 import CategoriesCarousel from "@/components/catgry";
 
 // Simplified Category Card Component
 const CategoryCard = ({ category, index }) => {
-  // Function to get image URL
-  const getImageUrl = (image) => {
-    if (!image) return "/placeholder.jpg";
-    if (image.startsWith("http")) return image;
-    return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
-  };
 
   return (
     <motion.div

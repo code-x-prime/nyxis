@@ -7,7 +7,7 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel";
-import { fetchApi } from "@/lib/utils";
+import { fetchApi, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 
 export default function BrandCarousel({ tag, title }) {
@@ -81,11 +81,7 @@ export default function BrandCarousel({ tag, title }) {
                       <div className="aspect-square bg-[#f8faf9] relative p-3">
                         <Image
                           fill
-                          src={
-                            brand.image?.startsWith("http")
-                              ? brand.image
-                              : `https://desirediv-storage.blr1.digitaloceanspaces.com/${brand.image}`
-                          }
+                          src={getImageUrl(brand.image)}
                           alt={brand.name}
                           className="object-contain group-hover:scale-105 transition-transform duration-500 p-2"
                         />

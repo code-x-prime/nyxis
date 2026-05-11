@@ -4,17 +4,10 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { fetchApi } from "@/lib/utils";
+import { fetchApi, getImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { FiAlertCircle as AlertCircle, FiChevronDown as ChevronDown, FiChevronUp as ChevronUp } from "react-icons/fi";
 import ProducCard from "@/components/ProducCard";
-
-// Helper function to format image URLs correctly
-const getImageUrl = (image) => {
-  if (!image) return "/images/blog-placeholder.jpg";
-  if (image.startsWith("http")) return image;
-  return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
-};
 
 export default function CategoryPage() {
   const params = useParams();

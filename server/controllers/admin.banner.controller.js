@@ -108,7 +108,10 @@ export const createBanner = asyncHandler(async (req, res, next) => {
   const { title, subtitle, link, position, isPublished, isActive } = req.body;
 
   // Validate required fields
-  if (!req.files || !req.files.desktopImage || !req.files.mobileImage) {
+  const hasDesktop = (req.files && req.files.desktopImage) || req.body.desktopImageUrl;
+  const hasMobile = (req.files && req.files.mobileImage) || req.body.mobileImageUrl;
+
+  if (!hasDesktop || !hasMobile) {
     throw new ApiError(400, "Desktop and mobile images are required");
   }
 
@@ -116,17 +119,31 @@ export const createBanner = asyncHandler(async (req, res, next) => {
   let desktopImageUrl, mobileImageUrl;
 
   try {
-    desktopImageUrl = await processAndUploadImage(req.files.desktopImage[0]);
-    mobileImageUrl = await processAndUploadImage(req.files.mobileImage[0]);
+    // Check if images are provided from media library (URLs) or as files
+    if (req.body.desktopImageUrl) {
+      desktopImageUrl = req.body.desktopImageUrl;
+    } else if (req.files && req.files.desktopImage) {
+      desktopImageUrl = await processAndUploadImage(req.files.desktopImage[0]);
+    }
+
+    if (req.body.mobileImageUrl) {
+      mobileImageUrl = req.body.mobileImageUrl;
+    } else if (req.files && req.files.mobileImage) {
+      mobileImageUrl = await processAndUploadImage(req.files.mobileImage[0]);
+    }
+
+    if (!desktopImageUrl || !mobileImageUrl) {
+      throw new ApiError(400, "Desktop and mobile images are required");
+    }
   } catch (error) {
-    // Clean up uploaded images if one fails
-    if (desktopImageUrl) {
+    // Clean up uploaded images if one fails (only if they were newly uploaded)
+    if (desktopImageUrl && req.files?.desktopImage) {
       await deleteFromS3(desktopImageUrl);
     }
-    if (mobileImageUrl) {
+    if (mobileImageUrl && req.files?.mobileImage) {
       await deleteFromS3(mobileImageUrl);
     }
-    throw new ApiError(400, "Failed to upload images: " + error.message);
+    throw new ApiError(400, "Failed to process images: " + error.message);
   }
 
   // Auto-calculate position if not provided
@@ -311,42 +328,52 @@ export const updateBanner = asyncHandler(async (req, res, next) => {
     }
   }
 
-  // Handle image uploads
-  if (req.files) {
-    if (req.files.desktopImage && req.files.desktopImage[0]) {
-      // Delete old image
-      if (existingBanner.desktopImage) {
-        await deleteFromS3(existingBanner.desktopImage);
-      }
-      // Upload new image
-      try {
-        updateData.desktopImage = await processAndUploadImage(
-          req.files.desktopImage[0]
-        );
-      } catch (error) {
-        throw new ApiError(
-          400,
-          "Failed to upload desktop image: " + error.message
-        );
-      }
+  // Handle image uploads or library selection
+  if (req.body.desktopImageUrl) {
+    // Delete old image if it exists and is different
+    if (existingBanner.desktopImage && existingBanner.desktopImage !== req.body.desktopImageUrl) {
+      await deleteFromS3(existingBanner.desktopImage);
     }
+    updateData.desktopImage = req.body.desktopImageUrl;
+  } else if (req.files?.desktopImage?.[0]) {
+    // Delete old image
+    if (existingBanner.desktopImage) {
+      await deleteFromS3(existingBanner.desktopImage);
+    }
+    // Upload new image
+    try {
+      updateData.desktopImage = await processAndUploadImage(
+        req.files.desktopImage[0]
+      );
+    } catch (error) {
+      throw new ApiError(
+        400,
+        "Failed to upload desktop image: " + error.message
+      );
+    }
+  }
 
-    if (req.files.mobileImage && req.files.mobileImage[0]) {
-      // Delete old image
-      if (existingBanner.mobileImage) {
-        await deleteFromS3(existingBanner.mobileImage);
-      }
-      // Upload new image
-      try {
-        updateData.mobileImage = await processAndUploadImage(
-          req.files.mobileImage[0]
-        );
-      } catch (error) {
-        throw new ApiError(
-          400,
-          "Failed to upload mobile image: " + error.message
-        );
-      }
+  if (req.body.mobileImageUrl) {
+    // Delete old image if it exists and is different
+    if (existingBanner.mobileImage && existingBanner.mobileImage !== req.body.mobileImageUrl) {
+      await deleteFromS3(existingBanner.mobileImage);
+    }
+    updateData.mobileImage = req.body.mobileImageUrl;
+  } else if (req.files?.mobileImage?.[0]) {
+    // Delete old image
+    if (existingBanner.mobileImage) {
+      await deleteFromS3(existingBanner.mobileImage);
+    }
+    // Upload new image
+    try {
+      updateData.mobileImage = await processAndUploadImage(
+        req.files.mobileImage[0]
+      );
+    } catch (error) {
+      throw new ApiError(
+        400,
+        "Failed to upload mobile image: " + error.message
+      );
     }
   }
 

@@ -59,6 +59,8 @@ import {
 
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/hooks/useTheme";
+import MediaDialog, { MediaItem } from "@/components/MediaDialog";
+import { Layers } from "lucide-react";
 
 function useCategories() {
   const [categoriesData, setCategoriesData] = useState<any[]>([]);
@@ -171,6 +173,9 @@ export function ProductForm({
   const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>(
     []
   );
+
+  const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
+  const [videoLibraryDialogOpen, setVideoLibraryDialogOpen] = useState(false);
 
   // Get categories data using the useCategories hook
   const { categories, isLoading: categoriesLoading } = useCategories();
@@ -389,6 +394,7 @@ export function ProductForm({
       "image/png": [],
       "image/webp": [],
       "image/gif": [],
+      "image/avif": [],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
     multiple: true,
@@ -441,6 +447,48 @@ export function ProductForm({
     setVideoPreviewUrl(null);
     setVideoRemoved(true);
   }, [videoFile, videoPreviewUrl]);
+
+  // Handle media selection from library
+  const handleMediaSelect = (selectedMedia: MediaItem[]) => {
+    if (selectedMedia.length === 0) return;
+
+    // Create local previews with URL but no file object
+    const newPreviews: ImagePreview[] = selectedMedia
+      .filter((m) => m.type === "image")
+      .map((m) => ({
+        url: m.url,
+        isPrimary: false,
+      }));
+
+    if (newPreviews.length === 0) {
+      toast.error("Please select image files only");
+      return;
+    }
+
+    setImagePreviews((prev) => {
+      const combined = [...prev, ...newPreviews];
+      if (prev.length === 0 && newPreviews.length > 0) {
+        combined[0].isPrimary = true;
+      }
+      return combined;
+    });
+
+    toast.success(`${newPreviews.length} image(s) added from library`);
+  };
+
+  const handleVideoSelect = (selectedMedia: MediaItem[]) => {
+    if (selectedMedia.length === 0) return;
+    const item = selectedMedia[0];
+    if (item.type !== "video") {
+      toast.error("Please select a video file");
+      return;
+    }
+
+    setVideoFile(null); // Clear any local file
+    setVideoPreviewUrl(item.url);
+    setVideoRemoved(false);
+    toast.success("Video selected from library");
+  };
 
   // Product image reorder (drag and drop)
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
@@ -1106,7 +1154,12 @@ export function ProductForm({
       // Add variants if product has variants
       if (hasVariants && variants.length > 0) {
         // Ensure all required fields are in each variant
-        const processedVariants = variants.map((variant) => {
+        const processedVariants = variants.map((variant, _i) => {
+          // Collect images that are URLs (from Media Library)
+          const imageUrls = variant.images
+            ?.filter((img: any) => img.isNew && !img.file && img.url)
+            .map((img: any) => img.url) || [];
+
           return {
             id: variant.id,
             attributeValueIds: variant.attributeValueIds || [],
@@ -1116,6 +1169,7 @@ export function ProductForm({
             quantity: String(variant.quantity || 0),
             isActive: variant.isActive !== undefined ? variant.isActive : true,
             removedImageIds: variant.removedImageIds || [], // Include removed image IDs for cleanup
+            imageUrls, // Add Media Library URLs
 
             // Include Shipping, MOQ, and Pricing Slabs
             shippingLength: variant.shippingLength,
@@ -1123,8 +1177,16 @@ export function ProductForm({
             shippingHeight: variant.shippingHeight,
             shippingWeight: variant.shippingWeight,
             moq: variant.moq,
-            pricingSlabs: variant.pricingSlabs
+            pricingSlabs: variant.pricingSlabs,
+            videoUrl: variant.videoUrl && !variant.videoUrl.startsWith('blob:') ? variant.videoUrl : undefined,
           };
+        });
+
+        // Append variant video files
+        variants.forEach((variant, i) => {
+          if (variant.videoFile) {
+            formData.append(`variantVideo_${i}`, variant.videoFile);
+          }
         });
 
         formData.append("variants", JSON.stringify(processedVariants));
@@ -1132,10 +1194,21 @@ export function ProductForm({
 
       // Add images (only for non-variant products)
       const hasNewImages = imagePreviews.some((p) => p.file);
-      const allImagesAreNew = imagePreviews.length > 0 && imagePreviews.every((p) => p.file);
-      if (!hasVariants && hasNewImages) {
+      const hasLibraryImages = imagePreviews.some((p) => !p.file && !p.id && p.url);
+
+      if (!hasVariants && (hasNewImages || hasLibraryImages)) {
+        // Collect Media Library URLs
+        const productImageUrls = imagePreviews
+          .filter((p) => !p.file && !p.id && p.url)
+          .map((p) => p.url);
+
+        if (productImageUrls.length > 0) {
+          formData.append("productImageUrls", JSON.stringify(productImageUrls));
+        }
+
+        const allImagesAreNew = imagePreviews.length > 0 && imagePreviews.every((p) => p.file || (!p.id && p.url));
         console.log(
-          `📸 Submitting ${imagePreviews.filter((p) => p.file).length} images for simple product`
+          `📸 Submitting ${imagePreviews.filter((p) => p.file).length} files and ${productImageUrls.length} library URLs for simple product`
         );
 
         // When editing and all images are new (user replaced all), tell backend to replace
@@ -1179,6 +1252,9 @@ export function ProductForm({
       // Add video if provided (optional)
       if (videoFile) {
         formData.append("video", videoFile);
+      } else if (videoPreviewUrl && !videoPreviewUrl.startsWith('blob:')) {
+        // This is a library URL for simple product
+        formData.append("videoUrl", videoPreviewUrl);
       }
       if (mode === "edit" && videoRemoved) {
         formData.append("removeVideo", "true");
@@ -2056,185 +2132,229 @@ export function ProductForm({
             </div>
           </div>
 
-          {/* Product Images - Dropzone - Only show when variants are NOT enabled */}
+          {/* Product Images Section - Premium UI */}
           {!hasVariants && (
-            <div className="space-y-4 rounded-lg border p-4 bg-[var(--bg-secondary)]">
-              <h2 className="text-xl font-semibold border-b pb-2">
-                Product Images
-              </h2>
-              <div className="space-y-2">
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium">{t("products.form.media.upload_title")}</p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {t("products.form.media.drag_drop_hint")}
+            <div className="space-y-6 rounded-xl border p-6 bg-[var(--bg-secondary)] shadow-sm border-[var(--border-color)]">
+              <div className="flex items-center justify-between border-b pb-4 border-[var(--border-color)]">
+                <div>
+                  <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-blue-500" />
+                    Product Gallery
+                  </h2>
+                  <p className="text-sm text-[var(--text-secondary)] mt-0.5">
+                    Manage your product's visual presentation
                   </p>
                 </div>
-                <div
-                  {...getRootProps()}
-                  className={`border-2 border-dashed rounded-md p-8 cursor-pointer transition-colors text-center bg-[var(--bg-card)] ${isDragActive
-                    ? "border-blue-400 bg-blue-50"
-                    : "border-[var(--border-color)] hover:border-[var(--border-color)] hover:bg-[var(--bg-secondary)]"
-                    }`}
-                >
-                  <input {...getInputProps()} />
-                  <ImageIcon className="h-10 w-10 mx-auto mb-2 text-[var(--text-secondary)]" />
-                  {isDragActive ? (
-                    <p className="text-blue-600 font-medium">
-                      {t("products.form.media.drop_here")}
-                      {t("products.form.media.drop_text")}
-                    </p>
-                  ) : (
-                    <>
-                      <p className="text-[var(--text-secondary)]">
-                        {t("products.form.media.drop_multiple_images")}
-                      </p>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1">
-                        {t("products.form.media.upload_hint")}
-                      </p>
-                    </>
-                  )}
-                </div>
-
-                {/* Fallback file input */}
-                <div className="mt-2">
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    multiple
-                    onChange={(e) => {
-                      if (e.target.files) {
-                        const files = Array.from(e.target.files);
-                        onDrop(files);
-                        // Clear the input so the same file can be selected again
-                        e.target.value = "";
-                      }
-                    }}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t("products.form.media.alternative_input_hint")}
-                  </p>
-                </div>
-
-                {/* Manual File Input as Fallback */}
+                <Badge variant="outline" className="px-3 py-1 bg-white/50 border-[var(--border-color)] shadow-sm">
+                  {imagePreviews.length} Image{imagePreviews.length !== 1 ? "s" : ""}
+                </Badge>
               </div>
 
-              {/* Image previews */}
-              {imagePreviews.length > 0 && (
-                <div className="mt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <Label className="text-[var(--text-primary)]">{t("products.form.sections.product_images")}</Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-[var(--text-secondary)]">Drag to reorder</span>
-                      <Badge variant="outline" className="text-xs">
-                        {imagePreviews.length} {t("products.form.media.image")}
-                        {imagePreviews.length !== 1 ? "s" : ""}
-                      </Badge>
+              <div className="grid gap-6">
+                <div className="grid gap-4">
+                  <div
+                    {...getRootProps()}
+                    className={`relative group border-2 border-dashed rounded-2xl p-10 transition-all duration-300 cursor-pointer ${
+                      isDragActive
+                        ? "border-blue-500 bg-blue-50/40 scale-[0.99] ring-4 ring-blue-500/10"
+                        : "border-[var(--border-color)] hover:border-blue-400 hover:bg-[var(--bg-sidebar-hover)]"
+                    }`}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="w-20 h-20 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                        <ImageIcon className="h-10 w-10 text-blue-500" />
+                      </div>
+                      <h4 className="text-base font-bold text-[var(--text-primary)]">
+                        {isDragActive ? "Drop images now" : "Drag & Drop Images"}
+                      </h4>
+                      <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-[320px]">
+                        Choose high-quality photos to make your product stand out. Support for PNG, JPG, WEBP.
+                      </p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {imagePreviews.map((preview, index) => (
-                      <div
-                        key={preview.id || preview.url}
-                        draggable
-                        onDragStart={(e) => handleProductImageDragStart(e, index)}
-                        onDragOver={(e) => handleProductImageDragOver(e, index)}
-                        onDragLeave={handleProductImageDragLeave}
-                        onDrop={(e) => handleProductImageDrop(e, index)}
-                        className={`relative group cursor-move transition-all ${
-                          draggedImageIndex === index ? "opacity-50 scale-95" : ""
-                        } ${
-                          dragOverImageIndex === index && draggedImageIndex !== index
-                            ? "ring-2 ring-primary ring-offset-2"
-                            : ""
-                        }`}
-                      >
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-[var(--border-color)]"></span>
+                    </div>
+                    <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-black">
+                      <span className="bg-[var(--bg-secondary)] px-4 text-[var(--text-secondary)]">OR</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-14 rounded-2xl border-2 border-[var(--border-color)] hover:bg-[var(--bg-sidebar-hover)] hover:border-blue-400/50 transition-all font-bold text-base shadow-sm group"
+                    onClick={() => setMediaDialogOpen(true)}
+                  >
+                    <Layers className="h-5 w-5 mr-3 text-blue-500 group-hover:scale-110 transition-transform" />
+                    Browse Media Library
+                  </Button>
+                </div>
+
+                {/* Image Previews with Premium Styling */}
+                {imagePreviews.length > 0 && (
+                  <div className="pt-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                        Current Gallery
+                      </h3>
+                      <p className="text-[10px] text-[var(--text-secondary)] font-medium">
+                        Drag to reorder • First image is primary
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      {imagePreviews.map((preview, index) => (
                         <div
-                          className={`relative h-32 rounded-md overflow-hidden border-2 ${preview.isPrimary ? "border-primary" : "border-[var(--border-color)]"}`}
+                          key={preview.id || preview.url || index}
+                          draggable
+                          onDragStart={(e) => handleProductImageDragStart(e, index)}
+                          onDragOver={(e) => handleProductImageDragOver(e, index)}
+                          onDragLeave={handleProductImageDragLeave}
+                          onDrop={(e) => handleProductImageDrop(e, index)}
+                          className={`group relative aspect-square rounded-xl overflow-hidden cursor-move transition-all duration-300 ring-2 ring-transparent hover:ring-blue-500/50 hover:shadow-xl ${
+                            draggedImageIndex === index ? "opacity-40 scale-90" : ""
+                          } ${
+                            dragOverImageIndex === index && draggedImageIndex !== index
+                              ? "ring-blue-500 ring-offset-2 scale-105 z-10"
+                              : ""
+                          } ${preview.isPrimary ? "ring-blue-500 ring-offset-2" : "border border-[var(--border-color)]"}`}
                         >
                           <img
                             src={preview.url}
-                            alt={`Product preview ${index + 1}`}
-                            className="h-full w-full object-cover"
+                            alt={`Gallery image ${index + 1}`}
+                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                           />
+                          
+                          {/* Primary Badge */}
                           {preview.isPrimary && (
-                            <span className="absolute top-2 left-2 bg-primary text-white text-xs py-1 px-2 rounded-full">
-                              {t("products.form.media.primary_image")}
-                            </span>
+                            <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-[10px] font-black rounded-md shadow-lg backdrop-blur-md">
+                              PRIMARY
+                            </div>
                           )}
-                        </div>
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex space-x-1">
-                          {!preview.isPrimary && (
+
+                          {/* Overlay Controls */}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                            {!preview.isPrimary && (
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="icon"
+                                className="h-8 w-8 rounded-lg bg-white/90 hover:bg-blue-500 hover:text-white shadow-lg transition-all"
+                                onClick={() => setPrimaryImage(index)}
+                                title="Set as Primary"
+                              >
+                                <Star className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="destructive"
                               size="icon"
-                              className="h-7 w-7 bg-[var(--bg-card)] hover:bg-primary hover:text-white"
-                              onClick={() => setPrimaryImage(index)}
+                              className="h-8 w-8 rounded-lg bg-red-500/90 hover:bg-red-600 shadow-lg transition-all"
+                              onClick={() => removeImage(index)}
+                              title="Delete Image"
                             >
-                              <Star className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
-                          )}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-7 w-7 bg-[var(--bg-card)] hover:bg-destructive hover:text-white"
-                            onClick={() => removeImage(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          </div>
+                          
+                          {/* Index Indicator */}
+                          <div className="absolute bottom-2 left-2 w-6 h-6 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-[10px] text-white font-bold border border-white/20">
+                            {index + 1}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
 
-          {/* Product Video - Optional (max 10MB) */}
-          <div className="space-y-4 rounded-lg border p-4 bg-[var(--bg-secondary)]">
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Product Video (Optional)
-            </h2>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Add a product video (MP4 or WebM, max 10MB). Same storage as product images.
-            </p>
+          {/* Product Video Section - Premium UI */}
+          <div className="space-y-4 rounded-xl border p-5 bg-[var(--bg-secondary)] shadow-sm border-[var(--border-color)]">
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--border-color)]">
+              <div>
+                <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                  <Video className="h-5 w-5 text-indigo-500" />
+                  Product Video
+                </h2>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                  Enhance your listing with a product walkthrough
+                </p>
+              </div>
+              {videoPreviewUrl && (
+                <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-indigo-100">
+                  Video Added
+                </Badge>
+              )}
+            </div>
+
             {videoPreviewUrl ? (
-              <div className="relative inline-block">
+              <div className="relative group w-full bg-zinc-950 rounded-xl overflow-hidden shadow-inner ring-1 ring-white/10">
                 <video
                   src={videoPreviewUrl}
                   controls
-                  className="max-h-48 rounded-lg border"
+                  className="w-full aspect-video max-h-[300px] object-contain mx-auto"
                 />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 h-8 w-8"
-                  onClick={removeVideo}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="h-8 w-8 shadow-lg"
+                    onClick={removeVideo}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div
-                {...getVideoRootProps()}
-                className={`border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors text-center bg-[var(--bg-card)] ${
-                  isVideoDragActive
-                    ? "border-blue-400 bg-blue-50"
-                    : "border-[var(--border-color)] hover:border-[var(--border-color)] hover:bg-[var(--bg-secondary)]"
-                }`}
-              >
-                <input {...getVideoInputProps()} />
-                <Video className="h-10 w-10 mx-auto mb-2 text-[var(--text-secondary)]" />
-                <p className="text-sm text-[var(--text-secondary)]">
-                  {isVideoDragActive ? "Drop video here..." : "Drop video or click to upload"}
-                </p>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">
-                  MP4 or WebM, max 10MB
-                </p>
+              <div className="grid gap-4">
+                <div
+                  {...getVideoRootProps()}
+                  className={`relative group border-2 border-dashed rounded-xl p-8 transition-all duration-300 ${
+                    isVideoDragActive
+                      ? "border-indigo-400 bg-indigo-50/30 scale-[0.99]"
+                      : "border-[var(--border-color)] hover:border-indigo-400/50 hover:bg-[var(--bg-sidebar-hover)]"
+                  }`}
+                >
+                  <input {...getVideoInputProps()} />
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 rounded-full bg-indigo-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Video className="h-8 w-8 text-indigo-500" />
+                    </div>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">
+                      {isVideoDragActive ? "Drop video here" : "Drag & Drop Product Video"}
+                    </p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-2 max-w-[240px]">
+                      Accepts MP4 or WebM formats (Max 10MB)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-[var(--border-color)]"></span>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-[var(--bg-secondary)] px-2 text-[var(--text-secondary)] font-semibold tracking-wider">OR</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 rounded-xl border-[var(--border-color)] hover:bg-[var(--bg-sidebar-hover)] hover:border-indigo-400/50 transition-all font-medium text-[var(--text-primary)]"
+                  onClick={() => setVideoLibraryDialogOpen(true)}
+                >
+                  <Layers className="h-4 w-4 mr-2 text-indigo-500" />
+                  Browse from Media Library
+                </Button>
               </div>
             )}
           </div>
@@ -2591,6 +2711,24 @@ export function ProductForm({
             </Button>
           </div>
         </form>
+
+        <MediaDialog
+          open={mediaDialogOpen}
+          onOpenChange={setMediaDialogOpen}
+          onSelect={handleMediaSelect}
+          allowMultiple={true}
+          type="image"
+          title="Select Product Images"
+        />
+
+        <MediaDialog
+          open={videoLibraryDialogOpen}
+          onOpenChange={setVideoLibraryDialogOpen}
+          onSelect={handleVideoSelect}
+          allowMultiple={false}
+          type="video"
+          title="Select Product Video"
+        />
       </Card>
     </div>
   );

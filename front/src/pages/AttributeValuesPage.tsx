@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import MediaDialog from "@/components/MediaDialog";
 
 export default function AttributeValuesPage() {
   const { attributeId, id } = useParams();
@@ -439,9 +440,11 @@ function AttributeValueForm({
     value: "",
     hexCode: "",
     image: null as File | null,
+    imageUrl: "" as string,
   });
   const [existingImage, setExistingImage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const isColorAttribute = attribute?.name?.toLowerCase() === "color";
@@ -539,6 +542,7 @@ function AttributeValueForm({
               value: value.value || "",
               hexCode: value.hexCode || "",
               image: null,
+              imageUrl: "",
             });
             if (value.image) {
               setExistingImage(value.image);
@@ -559,7 +563,7 @@ function AttributeValueForm({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData({ ...formData, image: file });
+      setFormData({ ...formData, image: file, imageUrl: "" });
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -568,8 +572,17 @@ function AttributeValueForm({
     }
   };
 
+  const handleMediaSelect = (media: any[]) => {
+    if (media.length > 0) {
+      const selected = media[0];
+      setFormData({ ...formData, imageUrl: selected.url, image: null });
+      setImagePreview(selected.url);
+    }
+    setShowMediaLibrary(false);
+  };
+
   const handleRemoveImage = () => {
-    setFormData({ ...formData, image: null });
+    setFormData({ ...formData, image: null, imageUrl: "" });
     setImagePreview(null);
     setExistingImage(null);
     if (fileInputRef.current) {
@@ -591,9 +604,14 @@ function AttributeValueForm({
         submitData.hexCode = formData.hexCode || "";
       }
 
-      // Add image if provided
+      // Add image if provided as file
       if (formData.image) {
         submitData.image = formData.image;
+      }
+
+      // Add imageUrl if selected from library
+      if (formData.imageUrl) {
+        submitData.imageUrl = formData.imageUrl;
       }
 
       if (mode === "create") {
@@ -768,35 +786,54 @@ function AttributeValueForm({
                   <img
                     src={imagePreview || existingImage || ""}
                     alt="Preview"
-                    className="h-24 w-24 object-cover rounded-md border-2 border-gray-300"
+                    className="h-32 w-32 object-cover rounded-md border-2 border-gray-300 shadow-sm"
                   />
                   <Button
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-md"
                     onClick={handleRemoveImage}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               )}
-              <div>
-                <Input
-                  ref={fileInputRef}
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="cursor-pointer"
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Upload an image for this attribute value (e.g., color swatch,
-                  size chart)
-                </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1">
+                  <Input
+                    ref={fileInputRef}
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="cursor-pointer"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">OR</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowMediaLibrary(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Select from Library
+                  </Button>
+                </div>
               </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Upload an image or select from your media library (e.g., color swatch, size chart)
+              </p>
             </div>
           </div>
+
+          <MediaDialog
+            open={showMediaLibrary}
+            onOpenChange={setShowMediaLibrary}
+            onSelect={handleMediaSelect}
+          />
 
           <div className="flex gap-4">
             <Button type="submit" disabled={isLoading}>

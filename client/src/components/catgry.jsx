@@ -12,7 +12,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 
-import { fetchApi } from "@/lib/utils";
+import { fetchApi, getImageUrl } from "@/lib/utils";
 
 const CategoriesCarousel = () => {
   const [categories, setCategories] = useState([]);
@@ -95,7 +95,7 @@ const CategoriesCarousel = () => {
           ) : (
             <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-gray-50 to-white rounded-xl flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-[#136C5B]/5 group-hover:to-white transition-all duration-300">
               <Image
-                src={category.image || "/placeholder.jpg"}
+                src={getImageUrl(category.image)}
                 alt={category.name || "Category"}
                 width={200}
                 height={200}
@@ -202,14 +202,14 @@ const CategoriesCarousel = () => {
               <>
                 <CarouselPrevious
                   className={`absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 bg-white border-2 border-gray-200 shadow-lg hover:bg-[#136C5B] hover:border-[#136C5B] hidden md:flex hover:text-white transition-all duration-300 w-10 h-10 p-0 text-gray-600 z-10 ${!canScrollPrev
-                      ? "opacity-0 pointer-events-none"
-                      : "opacity-100"
+                    ? "opacity-0 pointer-events-none"
+                    : "opacity-100"
                     }`}
                 />
                 <CarouselNext
                   className={`absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 bg-white border-2 border-gray-200 shadow-lg hover:bg-[#136C5B] hover:border-[#136C5B] hidden md:flex hover:text-white transition-all duration-300 w-10 h-10 p-0 text-gray-600 z-10 ${!canScrollNext
-                      ? "opacity-0 pointer-events-none"
-                      : "opacity-100"
+                    ? "opacity-0 pointer-events-none"
+                    : "opacity-100"
                     }`}
                 />
               </>

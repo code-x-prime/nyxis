@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context";
+import MediaDialog from "@/components/MediaDialog";
 
 // Banner Form Component
 function BannerForm({
@@ -56,8 +57,12 @@ function BannerForm({
   });
   const [desktopImage, setDesktopImage] = useState<File | null>(null);
   const [mobileImage, setMobileImage] = useState<File | null>(null);
+  const [desktopImageUrl, setDesktopImageUrl] = useState<string>("");
+  const [mobileImageUrl, setMobileImageUrl] = useState<string>("");
   const [desktopPreview, setDesktopPreview] = useState<string | null>(null);
   const [mobilePreview, setMobilePreview] = useState<string | null>(null);
+  const [showMediaLibraryDesktop, setShowMediaLibraryDesktop] = useState(false);
+  const [showMediaLibraryMobile, setShowMediaLibraryMobile] = useState(false);
   const [nextPosition, setNextPosition] = useState<number | null>(null);
 
   // Fetch next available position for create mode
@@ -133,10 +138,21 @@ function BannerForm({
     onDrop: (acceptedFiles) => {
       if (acceptedFiles[0]) {
         setDesktopImage(acceptedFiles[0]);
+        setDesktopImageUrl("");
         setDesktopPreview(URL.createObjectURL(acceptedFiles[0]));
       }
     },
   });
+
+  const handleDesktopSelect = (media: any[]) => {
+    if (media.length > 0) {
+      const selected = media[0];
+      setDesktopImageUrl(selected.url);
+      setDesktopImage(null);
+      setDesktopPreview(selected.url);
+    }
+    setShowMediaLibraryDesktop(false);
+  };
 
   // Mobile image dropzone
   const {
@@ -151,15 +167,26 @@ function BannerForm({
     onDrop: (acceptedFiles) => {
       if (acceptedFiles[0]) {
         setMobileImage(acceptedFiles[0]);
+        setMobileImageUrl("");
         setMobilePreview(URL.createObjectURL(acceptedFiles[0]));
       }
     },
   });
 
+  const handleMobileSelect = (media: any[]) => {
+    if (media.length > 0) {
+      const selected = media[0];
+      setMobileImageUrl(selected.url);
+      setMobileImage(null);
+      setMobilePreview(selected.url);
+    }
+    setShowMediaLibraryMobile(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (mode === "create" && (!desktopImage || !mobileImage)) {
+    if (mode === "create" && !desktopPreview && !mobilePreview) {
       toast.error(t("banners.messages.images_required"));
       return;
     }
@@ -182,8 +209,11 @@ function BannerForm({
       };
 
       if (mode === "create") {
-        submitData.desktopImage = desktopImage!;
-        submitData.mobileImage = mobileImage!;
+        if (desktopImage) submitData.desktopImage = desktopImage;
+        if (mobileImage) submitData.mobileImage = mobileImage;
+        if (desktopImageUrl) submitData.desktopImageUrl = desktopImageUrl;
+        if (mobileImageUrl) submitData.mobileImageUrl = mobileImageUrl;
+        
         const response = await banners.createBanner(submitData);
         if (response.data.success) {
           toast.success(t("banners.messages.create_success"));
@@ -192,6 +222,9 @@ function BannerForm({
       } else {
         if (desktopImage) submitData.desktopImage = desktopImage;
         if (mobileImage) submitData.mobileImage = mobileImage;
+        if (desktopImageUrl) submitData.desktopImageUrl = desktopImageUrl;
+        if (mobileImageUrl) submitData.mobileImageUrl = mobileImageUrl;
+        
         const response = await banners.updateBanner(bannerId!, submitData);
         if (response.data.success) {
           toast.success(t("banners.messages.update_success"));
@@ -470,26 +503,62 @@ function BannerForm({
                     alt={t("banners.desktop_image.preview_alt")}
                     className="max-h-80 mx-auto rounded-lg border border-[var(--border-color)] shadow-sm"
                   />
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    {t("banners.desktop_image.replace_hint")}
+                  <p className="text-sm text-[var(--text-secondary)] mb-4">
+                    {t("banners.desktop_image.preview_hint")}
                   </p>
+                  <div className="flex justify-center gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setDesktopPreview(null)}
+                    >
+                      {t("banners.desktop_image.replace_hint")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowMediaLibraryDesktop(true)}
+                    >
+                      Select from Library
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--bg-secondary)]">
                     <ImageIcon className="h-8 w-8 text-[var(--text-secondary)]" />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <p className="text-sm font-medium text-[var(--text-primary)]">
                       {t("banners.desktop_image.upload_title")}
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)] mt-2">
+                    <div className="flex items-center justify-center gap-3">
+                      <Button type="button" variant="link" className="text-[var(--accent)] p-0">Click to upload</Button>
+                      <span className="text-xs text-[var(--text-secondary)]">or</span>
+                      <Button 
+                        type="button" 
+                        variant="link" 
+                        className="text-[var(--accent)] p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMediaLibraryDesktop(true);
+                        }}
+                      >
+                        Select from Library
+                      </Button>
+                    </div>
+                    <p className="text-xs text-[var(--text-secondary)]">
                       {t("banners.desktop_image.upload_hint")}
                     </p>
                   </div>
                 </div>
               )}
             </div>
+            <MediaDialog
+              open={showMediaLibraryDesktop}
+              onOpenChange={setShowMediaLibraryDesktop}
+              onSelect={handleDesktopSelect}
+            />
           </CardContent>
         </Card>
 
@@ -524,19 +593,50 @@ function BannerForm({
                     alt={t("banners.mobile_image.preview_alt")}
                     className="max-h-80 mx-auto rounded-lg border border-[var(--border-color)] shadow-sm"
                   />
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    {t("banners.mobile_image.replace_hint")}
+                  <p className="text-sm text-[var(--text-secondary)] mb-4">
+                    {t("banners.mobile_image.preview_hint")}
                   </p>
+                  <div className="flex justify-center gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setMobilePreview(null)}
+                    >
+                      {t("banners.mobile_image.replace_hint")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowMediaLibraryMobile(true)}
+                    >
+                      Select from Library
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--bg-secondary)]">
                     <ImageIcon className="h-8 w-8 text-[var(--text-secondary)]" />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <p className="text-sm font-medium text-[var(--text-primary)]">
                       {t("banners.mobile_image.upload_title")}
                     </p>
+                    <div className="flex items-center justify-center gap-3">
+                      <Button type="button" variant="link" className="text-[var(--accent)] p-0">Click to upload</Button>
+                      <span className="text-xs text-[var(--text-secondary)]">or</span>
+                      <Button 
+                        type="button" 
+                        variant="link" 
+                        className="text-[var(--accent)] p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMediaLibraryMobile(true);
+                        }}
+                      >
+                        Select from Library
+                      </Button>
+                    </div>
                     <p className="text-xs text-[var(--text-secondary)] mt-2">
                       {t("banners.mobile_image.upload_hint")}
                     </p>
@@ -544,6 +644,11 @@ function BannerForm({
                 </div>
               )}
             </div>
+            <MediaDialog
+              open={showMediaLibraryMobile}
+              onOpenChange={setShowMediaLibraryMobile}
+              onSelect={handleMobileSelect}
+            />
           </CardContent>
         </Card>
 

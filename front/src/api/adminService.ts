@@ -245,12 +245,16 @@ export const products = {
   // Product Images
   uploadImage: (
     productId: string,
-    imageFile: File,
-    isPrimary: boolean = false
+    imageFile?: File,
+    isPrimary: boolean = false,
+    order?: number,
+    imageUrl?: string
   ) => {
     const formData = new FormData();
-    formData.append("image", imageFile);
+    if (imageFile) formData.append("image", imageFile);
     formData.append("isPrimary", isPrimary.toString());
+    if (order !== undefined) formData.append("order", order.toString());
+    if (imageUrl) formData.append("imageUrl", imageUrl);
 
     return api.post(`/api/admin/products/${productId}/images`, formData, {
       headers: {
@@ -296,16 +300,25 @@ export const products = {
   // Variant Images
   uploadVariantImage: (
     variantId: string,
-    imageFile: File,
-    isPrimary?: boolean
+    imageFile?: File,
+    isPrimary?: boolean,
+    order?: number,
+    imageUrl?: string
   ) => {
     const formData = new FormData();
-    formData.append("image", imageFile);
+    if (imageFile) formData.append("image", imageFile);
 
     // Only append isPrimary if it's explicitly set (true or false)
-    // If undefined, let backend handle the decision
     if (isPrimary !== undefined) {
       formData.append("isPrimary", isPrimary.toString());
+    }
+
+    if (order !== undefined) {
+      formData.append("order", order.toString());
+    }
+
+    if (imageUrl) {
+      formData.append("imageUrl", imageUrl);
     }
 
     return api.post(`/api/admin/variants/${variantId}/images`, formData, {
@@ -343,12 +356,14 @@ export const colors = {
     hexCode?: string;
     description?: string;
     image?: File | null;
+    imageUrl?: string;
   }) => {
     const formData = new FormData();
     formData.append("name", data.name);
     if (data.hexCode) formData.append("hexCode", data.hexCode);
     if (data.description) formData.append("description", data.description);
     if (data.image) formData.append("image", data.image);
+    if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
 
     return api.post("/api/admin/colors", formData, {
       headers: {
@@ -363,6 +378,7 @@ export const colors = {
       hexCode?: string;
       description?: string;
       image?: File | null;
+      imageUrl?: string;
     }
   ) => {
     const formData = new FormData();
@@ -371,6 +387,7 @@ export const colors = {
       formData.append("hexCode", data.hexCode || "");
     if (data.description) formData.append("description", data.description);
     if (data.image) formData.append("image", data.image);
+    if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
 
     return api.patch(`/api/admin/colors/${colorId}`, formData, {
       headers: {
@@ -796,10 +813,11 @@ export const brands = {
   getBrands: (params: any = {}) => {
     return api.get("/api/admin/brands", { params });
   },
-  createBrand: (data: { name: string; image: File; tags?: string[] }) => {
+  createBrand: (data: { name: string; image?: File; imageUrl?: string; tags?: string[] }) => {
     const formData = new FormData();
     formData.append("name", data.name);
-    formData.append("image", data.image);
+    if (data.image) formData.append("image", data.image);
+    if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
     if (data.tags) data.tags.forEach((tag) => formData.append("tags", tag));
     return api.post("/api/admin/brands", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -807,11 +825,12 @@ export const brands = {
   },
   updateBrand: (
     brandId: string,
-    data: { name?: string; image?: File; tags?: string[] }
+    data: { name?: string; image?: File; imageUrl?: string; tags?: string[] }
   ) => {
     const formData = new FormData();
     if (data.name) formData.append("name", data.name);
     if (data.image) formData.append("image", data.image);
+    if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
     if (data.tags) data.tags.forEach((tag) => formData.append("tags", tag));
     return api.patch(`/api/admin/brands/${brandId}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -901,12 +920,13 @@ export const attributeValues = {
   },
   createAttributeValue: (
     attributeId: string,
-    data: { value: string; hexCode?: string; image?: File }
+    data: { value: string; hexCode?: string; image?: File; imageUrl?: string }
   ) => {
     const formData = new FormData();
     formData.append("value", data.value);
     if (data.hexCode) formData.append("hexCode", data.hexCode);
     if (data.image) formData.append("image", data.image);
+    if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
 
     return api.post(`/api/admin/attributes/${attributeId}/values`, formData, {
       headers: {
@@ -916,12 +936,13 @@ export const attributeValues = {
   },
   updateAttributeValue: (
     attributeValueId: string,
-    data: { value: string; hexCode?: string; image?: File }
+    data: { value: string; hexCode?: string; image?: File; imageUrl?: string }
   ) => {
     const formData = new FormData();
     formData.append("value", data.value);
     if (data.hexCode !== undefined) formData.append("hexCode", data.hexCode || "");
     if (data.image) formData.append("image", data.image);
+    if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
 
     return api.put(`/api/admin/attribute-values/${attributeValueId}`, formData, {
       headers: {
@@ -1003,12 +1024,13 @@ export const subCategories = {
   },
   createSubCategory: (
     categoryId: string,
-    data: { name: string; description?: string; image?: File }
+    data: { name: string; description?: string; image?: File; imageUrl?: string }
   ) => {
     const formData = new FormData();
     formData.append("name", data.name);
     if (data.description) formData.append("description", data.description);
     if (data.image) formData.append("image", data.image);
+    if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
 
     return api.post(
       `/api/admin/categories/${categoryId}/sub-categories`,
@@ -1022,17 +1044,18 @@ export const subCategories = {
   },
   updateSubCategory: (
     subCategoryId: string,
-    data: { name?: string; description?: string; image?: File; isActive?: boolean }
+    data: { name?: string; description?: string; image?: File; isActive?: boolean; imageUrl?: string }
   ) => {
     const formData = new FormData();
     if (data.name) formData.append("name", data.name);
     if (data.description !== undefined)
       formData.append("description", data.description || "");
     if (data.image) formData.append("image", data.image);
+    if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
     if (data.isActive !== undefined)
       formData.append("isActive", data.isActive.toString());
 
-    return api.put(`/api/admin/sub-categories/${subCategoryId}`, formData, {
+    return api.patch(`/api/admin/sub-categories/${subCategoryId}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -1135,8 +1158,10 @@ export const banners = {
     position?: number;
     isPublished?: boolean;
     isActive?: boolean;
-    desktopImage: File;
-    mobileImage: File;
+    desktopImage?: File;
+    mobileImage?: File;
+    desktopImageUrl?: string;
+    mobileImageUrl?: string;
   }) => {
     const formData = new FormData();
     if (data.title) formData.append("title", data.title);
@@ -1148,8 +1173,10 @@ export const banners = {
       formData.append("isPublished", data.isPublished.toString());
     if (data.isActive !== undefined)
       formData.append("isActive", data.isActive.toString());
-    formData.append("desktopImage", data.desktopImage);
-    formData.append("mobileImage", data.mobileImage);
+    if (data.desktopImage) formData.append("desktopImage", data.desktopImage);
+    if (data.mobileImage) formData.append("mobileImage", data.mobileImage);
+    if (data.desktopImageUrl) formData.append("desktopImageUrl", data.desktopImageUrl);
+    if (data.mobileImageUrl) formData.append("mobileImageUrl", data.mobileImageUrl);
 
     return api.post("/api/admin/banners", formData, {
       headers: {
@@ -1168,6 +1195,8 @@ export const banners = {
       isActive?: boolean;
       desktopImage?: File | null;
       mobileImage?: File | null;
+      desktopImageUrl?: string;
+      mobileImageUrl?: string;
     }
   ) => {
     const formData = new FormData();
@@ -1184,6 +1213,8 @@ export const banners = {
       formData.append("isActive", data.isActive.toString());
     if (data.desktopImage) formData.append("desktopImage", data.desktopImage);
     if (data.mobileImage) formData.append("mobileImage", data.mobileImage);
+    if (data.desktopImageUrl) formData.append("desktopImageUrl", data.desktopImageUrl);
+    if (data.mobileImageUrl) formData.append("mobileImageUrl", data.mobileImageUrl);
 
     return api.put(`/api/admin/banners/${bannerId}`, formData, {
       headers: {

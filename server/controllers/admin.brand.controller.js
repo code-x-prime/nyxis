@@ -8,12 +8,14 @@ import { deleteFromS3 } from "../utils/deleteFromS3.js";
 
 // Create Brand
 export const createBrand = asyncHandler(async (req, res) => {
-  const { name, tags } = req.body;
+  const { name, tags, imageUrl } = req.body;
   if (!name) throw new ApiError(400, "Brand name is required");
   const slug = slugify(name, { lower: true });
   let image = null;
   if (req.file) {
     image = await processAndUploadImage(req.file, "brands");
+  } else if (imageUrl) {
+    image = imageUrl;
   } else {
     throw new ApiError(400, "Brand image is required");
   }
@@ -31,7 +33,7 @@ export const createBrand = asyncHandler(async (req, res) => {
 // Update Brand
 export const updateBrand = asyncHandler(async (req, res) => {
   const { brandId } = req.params;
-  const { name, tags } = req.body;
+  const { name, tags, imageUrl } = req.body;
   const brand = await prisma.brand.findUnique({ where: { id: brandId } });
   if (!brand) throw new ApiError(404, "Brand not found");
   let updateData = {};
@@ -45,6 +47,10 @@ export const updateBrand = asyncHandler(async (req, res) => {
   if (req.file) {
     if (brand.image) await deleteFromS3(brand.image);
     updateData.image = await processAndUploadImage(req.file, "brands");
+  } else if (imageUrl) {
+    // Only delete old if it's different and was a direct upload (optional logic)
+    // For now keep it simple: if imageUrl is provided, use it.
+    updateData.image = imageUrl;
   }
   const updatedBrand = await prisma.brand.update({
     where: { id: brandId },

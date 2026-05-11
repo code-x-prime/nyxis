@@ -124,26 +124,34 @@ export const createCarouselItem = asyncHandler(async (req, res) => {
   let thumbnailUrl = null;
 
   if (mediaType === "UPLOAD") {
-    const mediaFile = req.files?.media?.[0];
-    const thumbFile = req.files?.thumbnail?.[0];
-
-    if (!mediaFile) {
-      throw new ApiError(400, "Media file is required for UPLOAD type");
-    }
-
-    const isVideo = mediaFile.mimetype?.startsWith("video/");
-    if (isVideo && mediaFile.size > VIDEO_MAX_SIZE_BYTES) {
-      throw new ApiError(400, "Video size must not exceed 10MB");
-    }
-
-    if (isVideo) {
-      mediaUrl = await uploadVideo(mediaFile);
+    // Check if provided from media library
+    if (req.body.mediaUrl) {
+      mediaUrl = req.body.mediaUrl;
     } else {
-      mediaUrl = await processAndUploadImage(mediaFile, "carousel");
+      const mediaFile = req.files?.media?.[0];
+      if (!mediaFile) {
+        throw new ApiError(400, "Media file or library URL is required for UPLOAD type");
+      }
+
+      const isVideo = mediaFile.mimetype?.startsWith("video/");
+      if (isVideo && mediaFile.size > VIDEO_MAX_SIZE_BYTES) {
+        throw new ApiError(400, "Video size must not exceed 10MB");
+      }
+
+      if (isVideo) {
+        mediaUrl = await uploadVideo(mediaFile);
+      } else {
+        mediaUrl = await processAndUploadImage(mediaFile, "carousel");
+      }
     }
 
-    if (thumbFile) {
-      thumbnailUrl = await processAndUploadImage(thumbFile, "carousel-thumbs");
+    if (req.body.thumbnailUrl) {
+      thumbnailUrl = req.body.thumbnailUrl;
+    } else {
+      const thumbFile = req.files?.thumbnail?.[0];
+      if (thumbFile) {
+        thumbnailUrl = await processAndUploadImage(thumbFile, "carousel-thumbs");
+      }
     }
   } else if (mediaType === "YOUTUBE" && youtubeUrl) {
     mediaUrl = youtubeUrl.trim();
@@ -223,22 +231,30 @@ export const updateCarouselItem = asyncHandler(async (req, res) => {
   const effectiveType = mediaType || existing.mediaType;
 
   if (effectiveType === "UPLOAD") {
-    const mediaFile = req.files?.media?.[0];
-    const thumbFile = req.files?.thumbnail?.[0];
-
-    if (mediaFile) {
-      const isVideo = mediaFile.mimetype?.startsWith("video/");
-      if (isVideo && mediaFile.size > VIDEO_MAX_SIZE_BYTES) {
-        throw new ApiError(400, "Video size must not exceed 10MB");
-      }
-      if (isVideo) {
-        mediaUrl = await uploadVideo(mediaFile);
-      } else {
-        mediaUrl = await processAndUploadImage(mediaFile, "carousel");
+    if (req.body.mediaUrl) {
+      mediaUrl = req.body.mediaUrl;
+    } else {
+      const mediaFile = req.files?.media?.[0];
+      if (mediaFile) {
+        const isVideo = mediaFile.mimetype?.startsWith("video/");
+        if (isVideo && mediaFile.size > VIDEO_MAX_SIZE_BYTES) {
+          throw new ApiError(400, "Video size must not exceed 10MB");
+        }
+        if (isVideo) {
+          mediaUrl = await uploadVideo(mediaFile);
+        } else {
+          mediaUrl = await processAndUploadImage(mediaFile, "carousel");
+        }
       }
     }
-    if (thumbFile) {
-      thumbnailUrl = await processAndUploadImage(thumbFile, "carousel-thumbs");
+
+    if (req.body.thumbnailUrl) {
+      thumbnailUrl = req.body.thumbnailUrl;
+    } else {
+      const thumbFile = req.files?.thumbnail?.[0];
+      if (thumbFile) {
+        thumbnailUrl = await processAndUploadImage(thumbFile, "carousel-thumbs");
+      }
     }
   } else if (effectiveType === "YOUTUBE" && youtubeUrl) {
     mediaUrl = youtubeUrl.trim();

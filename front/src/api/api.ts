@@ -9,9 +9,7 @@ const baseURL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 console.log("API Base URL:", baseURL);
 const api = axios.create({
   baseURL: baseURL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: {},
   withCredentials: true,
   timeout: 60000, // 60 second timeout
 });

@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { products, moq, pricingSlabs } from "@/api/adminService";
 import { useLanguage } from "@/context/LanguageContext";
+import MediaDialog, { MediaItem } from "@/components/MediaDialog";
 
 
 interface ImageData {
@@ -60,6 +61,9 @@ interface VariantData {
   shippingHeight?: number;
   shippingWeight?: number;
   pricingSlabs?: PricingSlabData[];
+  videoUrl?: string;
+  videoFile?: File;
+  videoRemoved?: boolean;
 }
 
 interface PricingSlabData {
@@ -102,6 +106,8 @@ export default function VariantCard({
   const [editingSlab, setEditingSlab] = useState<PricingSlabData | null>(null);
   const [slabForm, setSlabForm] = useState({ minQty: 1, maxQty: "", price: "" });
   const [slabLoading, setSlabLoading] = useState(false);
+  const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
+  const [videoLibraryDialogOpen, setVideoLibraryDialogOpen] = useState(false);
 
   // Fetch MOQ when variant has ID (edit mode)
   useEffect(() => {
@@ -284,6 +290,147 @@ export default function VariantCard({
     });
     setShowSlabForm(true);
   };
+
+  // Handle media selection from library
+  const handleMediaSelect = async (selectedMedia: MediaItem[]) => {
+    if (selectedMedia.length === 0) return;
+
+    if (remainingSlots <= 0) {
+      toast.error(`Maximum ${maxImages} images allowed per variant`);
+      return;
+    }
+
+    const availableSlots = Math.min(selectedMedia.length, remainingSlots);
+    const newImages: ImageData[] = [];
+
+    // Filter to only include images and take only what fits in available slots
+    const validMedia = selectedMedia
+      .filter(m => m.type === 'image')
+      .slice(0, availableSlots);
+
+    if (validMedia.length === 0) {
+      toast.error("Please select image files only");
+      return;
+    }
+
+    const isRealVariantId =
+      variant.id &&
+      typeof variant.id === "string" &&
+      !variant.id.includes("-") &&
+      variant.id.length > 10;
+
+    if (isEditMode && isRealVariantId) {
+      // Upload library URLs directly to server
+      setIsUploading(true);
+      try {
+        for (let i = 0; i < validMedia.length; i++) {
+          const mediaItem = validMedia[i];
+          const isPrimary = currentImages.length === 0 && i === 0;
+          const order = currentImages.length + i;
+
+          const response = await products.uploadVariantImage(
+            variant.id!,
+            undefined, // No file, passing URL in body
+            isPrimary,
+            order,
+            mediaItem.url
+          );
+
+          if (response.data.success) {
+            const uploadedImage = response.data.data?.image;
+            if (uploadedImage) {
+              newImages.push({
+                url: uploadedImage.url,
+                id: uploadedImage.id,
+                isPrimary: uploadedImage.isPrimary,
+                order: uploadedImage.order || order,
+                isNew: false,
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error adding library images:", error);
+        toast.error("Failed to add some images from library");
+      } finally {
+        setIsUploading(false);
+      }
+    } else {
+      // Create mode or new variant - store URLs locally
+      validMedia.forEach((mediaItem, i) => {
+        const tempId = `lib-${mediaItem.id}-${Date.now()}`;
+        const isPrimary = currentImages.length === 0 && i === 0;
+        const order = currentImages.length + i;
+
+        newImages.push({
+          url: mediaItem.url,
+          tempId,
+          isPrimary,
+          order,
+          isNew: true, // Marked as new so handleSubmit knows to send the URL
+        });
+      });
+    }
+
+    if (newImages.length > 0) {
+      // Update images array and fix ordering
+      const allImages = [...currentImages, ...newImages];
+      const finalImages = allImages.map((img, i) => ({
+        ...img,
+        order: i,
+        isPrimary: i === 0, // Simplified: first image is primary
+      }));
+
+      onImagesChange(index, finalImages);
+      toast.success(`${newImages.length} image(s) added from library`);
+    }
+  };
+
+  const handleVideoSelect = (selectedMedia: MediaItem[]) => {
+    if (selectedMedia.length === 0) return;
+    const item = selectedMedia[0];
+    if (item.type !== "video") {
+      toast.error("Please select a video file");
+      return;
+    }
+
+    onUpdate(index, "videoFile", null); // Clear any local file
+    onUpdate(index, "videoUrl", item.url);
+    onUpdate(index, "videoRemoved", false);
+    toast.success("Video selected from library");
+  };
+
+  const removeVideo = () => {
+    onUpdate(index, "videoFile", null);
+    onUpdate(index, "videoUrl", null);
+    onUpdate(index, "videoRemoved", true);
+  };
+
+  const onVideoDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return;
+    const file = acceptedFiles[0];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ["video/mp4", "video/webm"];
+    if (file.size > maxSize) {
+      toast.error("Video must be 10MB or less");
+      return;
+    }
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Only MP4 and WebM videos are supported");
+      return;
+    }
+    onUpdate(index, "videoFile", file);
+    onUpdate(index, "videoUrl", URL.createObjectURL(file));
+    onUpdate(index, "videoRemoved", false);
+    toast.success("Video added");
+  }, [index, onUpdate]);
+
+  const { getRootProps: getVideoRootProps, getInputProps: getVideoInputProps, isDragActive: isVideoDragActive } = useDropzone({
+    onDrop: onVideoDrop,
+    accept: { "video/mp4": [], "video/webm": [] },
+    maxSize: 10 * 1024 * 1024,
+    maxFiles: 1,
+  });
 
   // Get current images safely, sorted by order
   const rawImages = Array.isArray(variant.images) ? variant.images : [];
@@ -486,6 +633,7 @@ export default function VariantCard({
         "image/png": [],
         "image/webp": [],
         "image/gif": [],
+        "image/avif": [],
       },
       maxSize: 10 * 1024 * 1024, // 10MB
       multiple: true,
@@ -972,190 +1120,190 @@ export default function VariantCard({
                 placeholder="Optional"
               />
             </div>
+          </div>
 
-            {/* MOQ Settings */}
-            <div className="space-y-2 border-t border-[var(--border-color)] pt-3 mt-3">
-              <div className="flex items-center justify-between p-2 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)]">
-                <div className="space-y-0.5 flex-1">
-                  <Label className="text-xs font-medium text-[var(--text-primary)]">
-                    {t("variant_card.moq.enable")}
-                  </Label>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {t("variant_card.moq.override_desc")}
-                  </p>
-                </div>
-                <Switch
-                  checked={variantMOQ.isActive}
-                  onCheckedChange={(checked: boolean) => {
-                    const updatedMOQ = { ...variantMOQ, isActive: checked };
+          {/* MOQ Settings */}
+          <div className="space-y-2 border-t border-[var(--border-color)] pt-3 mt-3">
+            <div className="flex items-center justify-between p-2 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)]">
+              <div className="space-y-0.5 flex-1">
+                <Label className="text-xs font-medium text-[var(--text-primary)]">
+                  {t("variant_card.moq.enable")}
+                </Label>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {t("variant_card.moq.override_desc")}
+                </p>
+              </div>
+              <Switch
+                checked={variantMOQ.isActive}
+                onCheckedChange={(checked: boolean) => {
+                  const updatedMOQ = { ...variantMOQ, isActive: checked };
+                  setVariantMOQ(updatedMOQ);
+                  onUpdate(index, "moq", updatedMOQ);
+                }}
+              />
+            </div>
+
+            {variantMOQ.isActive && (
+              <div className="space-y-1">
+                <Label htmlFor={`moq-${index}`} className="text-xs text-[var(--text-primary)]">
+                  {t("variant_card.moq.min_quantity")}
+                </Label>
+                <Input
+                  id={`moq-${index}`}
+                  type="number"
+                  min="1"
+                  value={variantMOQ.minQuantity}
+                  onChange={(e) => {
+                    const updatedMOQ = {
+                      ...variantMOQ,
+                      minQuantity: parseInt(e.target.value) || 1,
+                    };
                     setVariantMOQ(updatedMOQ);
                     onUpdate(index, "moq", updatedMOQ);
                   }}
+                  className="h-8"
+                  placeholder={t("variant_card.moq.placeholder")}
                 />
               </div>
+            )}
+          </div>
 
-              {variantMOQ.isActive && (
-                <div className="space-y-1">
-                  <Label htmlFor={`moq-${index}`} className="text-xs text-[var(--text-primary)]">
-                    {t("variant_card.moq.min_quantity")}
-                  </Label>
-                  <Input
-                    id={`moq-${index}`}
-                    type="number"
-                    min="1"
-                    value={variantMOQ.minQuantity}
-                    onChange={(e) => {
-                      const updatedMOQ = {
-                        ...variantMOQ,
-                        minQuantity: parseInt(e.target.value) || 1,
-                      };
-                      setVariantMOQ(updatedMOQ);
-                      onUpdate(index, "moq", updatedMOQ);
-                    }}
-                    className="h-8"
-                    placeholder={t("variant_card.moq.placeholder")}
-                  />
-                </div>
+          {/* Pricing Slabs Section */}
+          <div className="space-y-3 border-t border-[var(--border-color)] pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-purple-600" />
+                <Label className="text-sm font-medium text-[var(--text-primary)]">{t("variant_card.pricing_slabs.title")}</Label>
+              </div>
+              {!showSlabForm && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditingSlab(null);
+                    setSlabForm({ minQty: 1, maxQty: "", price: "" });
+                    setShowSlabForm(true);
+                  }}
+                  className="h-7 text-xs"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  {t("variant_card.pricing_slabs.add")}
+                </Button>
               )}
             </div>
 
-            {/* Pricing Slabs Section */}
-            <div className="space-y-3 border-t border-[var(--border-color)] pt-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-purple-600" />
-                  <Label className="text-sm font-medium text-[var(--text-primary)]">{t("variant_card.pricing_slabs.title")}</Label>
+            {/* Existing Slabs List */}
+            {variantSlabs.length > 0 ? (
+              <div className="space-y-2">
+                {variantSlabs.map((slab, slabIndex) => (
+                  <div
+                    key={slab.id || slabIndex}
+                    className="flex items-center justify-between p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] text-sm"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="text-[var(--text-primary)]">
+                        {slab.minQty}-{slab.maxQty || "∞"} {t("variant_card.pricing_slabs.pieces")}
+                      </span>
+                      <span className="font-medium text-green-600">₹{slab.price}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditSlab(slab)}
+                        className="h-6 w-6 p-0"
+                        disabled={slabLoading}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteSlab(slab)}
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        disabled={slabLoading}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              !showSlabForm && (
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {t("variant_card.pricing_slabs.no_slabs")}
+                </p>
+              )
+            )}
+
+            {/* Add/Edit Slab Form */}
+            {showSlabForm && (
+              <div className="p-3 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-[var(--text-primary)]">{t("variant_card.pricing_slabs.min_qty")}</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={slabForm.minQty}
+                      onChange={(e) => setSlabForm({ ...slabForm, minQty: parseInt(e.target.value) || 1 })}
+                      className="h-8"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-[var(--text-primary)]">{t("variant_card.pricing_slabs.max_qty")}</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={slabForm.maxQty}
+                      onChange={(e) => setSlabForm({ ...slabForm, maxQty: e.target.value })}
+                      className="h-8"
+                      placeholder={t("variant_card.pricing_slabs.unlimited")}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-[var(--text-primary)]">{t("variant_card.pricing_slabs.price")}</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={slabForm.price}
+                      onChange={(e) => setSlabForm({ ...slabForm, price: e.target.value })}
+                      className="h-8"
+                    />
+                  </div>
                 </div>
-                {!showSlabForm && (
+                <div className="flex justify-end gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => {
+                      setShowSlabForm(false);
                       setEditingSlab(null);
                       setSlabForm({ minQty: 1, maxQty: "", price: "" });
-                      setShowSlabForm(true);
                     }}
-                    className="h-7 text-xs"
+                    className="h-7"
+                    disabled={slabLoading}
                   >
-                    <Plus className="h-3 w-3 mr-1" />
-                    {t("variant_card.pricing_slabs.add")}
+                    {t("variant_card.pricing_slabs.cancel")}
                   </Button>
-                )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={editingSlab ? handleUpdateSlab : handleAddSlab}
+                    className="h-7"
+                    disabled={slabLoading}
+                  >
+                    {slabLoading ? "..." : t("variant_card.pricing_slabs.save")}
+                  </Button>
+                </div>
               </div>
-
-              {/* Existing Slabs List */}
-              {variantSlabs.length > 0 ? (
-                <div className="space-y-2">
-                  {variantSlabs.map((slab, slabIndex) => (
-                    <div
-                      key={slab.id || slabIndex}
-                      className="flex items-center justify-between p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] text-sm"
-                    >
-                      <div className="flex items-center gap-4">
-                        <span className="text-[var(--text-primary)]">
-                          {slab.minQty}-{slab.maxQty || "∞"} {t("variant_card.pricing_slabs.pieces")}
-                        </span>
-                        <span className="font-medium text-green-600">₹{slab.price}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditSlab(slab)}
-                          className="h-6 w-6 p-0"
-                          disabled={slabLoading}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteSlab(slab)}
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                          disabled={slabLoading}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                !showSlabForm && (
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {t("variant_card.pricing_slabs.no_slabs")}
-                  </p>
-                )
-              )}
-
-              {/* Add/Edit Slab Form */}
-              {showSlabForm && (
-                <div className="p-3 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] space-y-3">
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-[var(--text-primary)]">{t("variant_card.pricing_slabs.min_qty")}</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={slabForm.minQty}
-                        onChange={(e) => setSlabForm({ ...slabForm, minQty: parseInt(e.target.value) || 1 })}
-                        className="h-8"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-[var(--text-primary)]">{t("variant_card.pricing_slabs.max_qty")}</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={slabForm.maxQty}
-                        onChange={(e) => setSlabForm({ ...slabForm, maxQty: e.target.value })}
-                        className="h-8"
-                        placeholder={t("variant_card.pricing_slabs.unlimited")}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-[var(--text-primary)]">{t("variant_card.pricing_slabs.price")}</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={slabForm.price}
-                        onChange={(e) => setSlabForm({ ...slabForm, price: e.target.value })}
-                        className="h-8"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setShowSlabForm(false);
-                        setEditingSlab(null);
-                        setSlabForm({ minQty: 1, maxQty: "", price: "" });
-                      }}
-                      className="h-7"
-                      disabled={slabLoading}
-                    >
-                      {t("variant_card.pricing_slabs.cancel")}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={editingSlab ? handleUpdateSlab : handleAddSlab}
-                      className="h-7"
-                      disabled={slabLoading}
-                    >
-                      {slabLoading ? "..." : t("variant_card.pricing_slabs.save")}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Shipping Dimensions Section - Only show when Shiprocket is enabled */}
@@ -1246,40 +1394,55 @@ export default function VariantCard({
 
             {/* Upload Area */}
             {remainingSlots > 0 && (
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${isDragActive
-                  ? isDragReject
-                    ? "border-red-400 bg-red-500/10"
-                    : "border-blue-400 bg-blue-500/10"
-                  : "border-[var(--border-color)] hover:border-[var(--accent)]/50 hover:bg-[var(--bg-secondary)]"
-                  } ${isUploading ? "opacity-50 pointer-events-none" : ""} ${remainingSlots <= 0 ? "opacity-50 pointer-events-none" : ""}`}
-              >
-                <input {...getInputProps()} />
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[var(--bg-secondary)]">
-                    {isUploading ? (
-                      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Plus className="h-6 w-6 text-gray-400" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">
-                      {isUploading
-                        ? "Uploading..."
-                        : isDragActive
-                          ? isDragReject
-                            ? "Some files are not supported"
-                            : "Drop images here"
-                          : "Add variant images"}
-                    </p>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1">
-                      JPG, PNG, WebP, GIF (max 10MB each) • {remainingSlots}{" "}
-                      slots remaining
-                    </p>
+              <div className="space-y-3">
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${isDragActive
+                    ? isDragReject
+                      ? "border-red-400 bg-red-500/10"
+                      : "border-blue-400 bg-blue-500/10"
+                    : "border-[var(--border-color)] hover:border-[var(--accent)]/50 hover:bg-[var(--bg-secondary)]"
+                    } ${isUploading ? "opacity-50 pointer-events-none" : ""} ${remainingSlots <= 0 ? "opacity-50 pointer-events-none" : ""}`}
+                >
+                  <input {...getInputProps()} />
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--bg-secondary)]">
+                      {isUploading ? (
+                        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Plus className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[var(--text-primary)]">
+                        {isUploading
+                          ? "Uploading..."
+                          : isDragActive
+                            ? isDragReject
+                              ? "Some files are not supported"
+                              : "Drop images here"
+                            : "Click or drag to upload images"}
+                      </p>
+                    </div>
                   </div>
                 </div>
+
+                <div className="flex items-center justify-center">
+                  <div className="w-full h-px bg-[var(--border-color)]"></div>
+                  <span className="px-3 text-xs text-[var(--text-secondary)] font-medium uppercase tracking-wider">OR</span>
+                  <div className="w-full h-px bg-[var(--border-color)]"></div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] h-10"
+                  onClick={() => setMediaDialogOpen(true)}
+                  disabled={isUploading || remainingSlots <= 0}
+                >
+                  <Layers className="h-4 w-4 mr-2" />
+                  Select from Media Library
+                </Button>
               </div>
             )}
 
@@ -1401,8 +1564,88 @@ export default function VariantCard({
               </div>
             )}
           </div>
+          {/* Video Management Section */}
+          <div className="space-y-3 border-t border-[var(--border-color)] pt-4 mt-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-[var(--text-primary)]">Variant Video (Optional)</Label>
+              {variant.videoUrl && (
+                <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">
+                  Video Added
+                </Badge>
+              )}
+            </div>
+
+            {variant.videoUrl ? (
+              <div className="relative group w-full aspect-video max-h-48 bg-black rounded-lg overflow-hidden border border-[var(--border-color)]">
+                <video 
+                  src={variant.videoUrl} 
+                  className="w-full h-full object-contain" 
+                  controls 
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={removeVideo}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div
+                  {...getVideoRootProps()}
+                  className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    isVideoDragActive
+                      ? "border-blue-400 bg-blue-50/50"
+                      : "border-[var(--border-color)] hover:border-blue-400/50 hover:bg-[var(--bg-secondary)]"
+                  }`}
+                >
+                  <input {...getVideoInputProps()} />
+                  <div className="flex flex-col items-center">
+                    <ImageIcon className="h-6 w-6 mb-1 text-[var(--text-secondary)] opacity-50" />
+                    <p className="text-xs font-medium text-[var(--text-primary)]">
+                      {isVideoDragActive ? "Drop video here" : "Upload Variant Video"}
+                    </p>
+                    <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">
+                      MP4 or WebM, Max 10MB
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-8 text-xs border-[var(--border-color)] hover:bg-[var(--bg-secondary)]"
+                  onClick={() => setVideoLibraryDialogOpen(true)}
+                >
+                  <Layers className="h-3 w-3 mr-2" />
+                  Select Video from Library
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       )}
+
+      <MediaDialog
+        open={mediaDialogOpen}
+        onOpenChange={setMediaDialogOpen}
+        onSelect={handleMediaSelect}
+        allowMultiple={true}
+        type="image"
+        title="Select Variant Images"
+      />
+      <MediaDialog
+        open={videoLibraryDialogOpen}
+        onOpenChange={setVideoLibraryDialogOpen}
+        onSelect={handleVideoSelect}
+        allowMultiple={false}
+        type="video"
+        title="Select Variant Video"
+      />
     </Card>
   );
 }

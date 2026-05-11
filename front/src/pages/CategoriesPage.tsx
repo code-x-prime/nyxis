@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import { DeleteProductDialog } from "@/components/DeleteProductDialog";
 import { useLanguage } from "@/context/LanguageContext";
+import MediaDialog from "@/components/MediaDialog";
+import { getImageUrl } from "@/utils/image";
 
 export default function CategoriesPage() {
   const { id } = useParams();
@@ -300,7 +302,7 @@ function CategoriesList() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {category.image ? (
                       <img
-                        src={category.image}
+                        src={getImageUrl(category.image)}
                         alt={category.name}
                         className="h-12 w-12 rounded-lg object-cover border border-[var(--border-color)] flex-shrink-0"
                       />
@@ -582,9 +584,12 @@ function CategoryForm({
   const [category, setCategory] = useState<any>({
     name: "",
     description: "",
+    imageUrl: "",
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const [subMediaOpen, setSubMediaOpen] = useState(false);
 
   // Sub-categories state
   const [subCategoriesList, setSubCategoriesList] = useState<any[]>([]);
@@ -596,6 +601,7 @@ function CategoryForm({
   const [subCategoryForm, setSubCategoryForm] = useState({
     name: "",
     description: "",
+    imageUrl: "",
   });
   const [subCategoryImageFile, setSubCategoryImageFile] = useState<File | null>(
     null
@@ -617,6 +623,7 @@ function CategoryForm({
             setCategory({
               name: categoryData.name || "",
               description: categoryData.description || "",
+              imageUrl: categoryData.image || "",
             });
             if (categoryData.image) {
               setImagePreview(categoryData.image);
@@ -656,14 +663,25 @@ function CategoryForm({
     }
   };
 
-  // Handle image selection
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const imageUrl = URL.createObjectURL(file);
-      setImagePreview(imageUrl);
+  // Handle image selection from Media Library
+  const handleMediaSelect = (selected: any[]) => {
+    if (selected.length > 0) {
+      const item = selected[0];
+      setCategory((prev: any) => ({ ...prev, imageUrl: item.key || item.url }));
+      setImageFile(null);
+      setImagePreview(item.url);
     }
+    setMediaOpen(false);
+  };
+
+  const handleSubMediaSelect = (selected: any[]) => {
+    if (selected.length > 0) {
+      const item = selected[0];
+      setSubCategoryForm((prev: any) => ({ ...prev, imageUrl: item.key || item.url }));
+      setSubCategoryImageFile(null);
+      setSubCategoryImagePreview(item.url);
+    }
+    setSubMediaOpen(false);
   };
 
   // Handle form input changes
@@ -683,26 +701,27 @@ function CategoryForm({
       setSubCategoryForm({
         name: subCategory.name || "",
         description: subCategory.description || "",
+        imageUrl: subCategory.image || "",
       });
       setSubCategoryImagePreview(subCategory.image || null);
     } else {
       setEditingSubCategory(null);
-      setSubCategoryForm({ name: "", description: "" });
+      setSubCategoryForm({ name: "", description: "", imageUrl: "" });
       setSubCategoryImagePreview(null);
     }
     setShowSubCategoryDialog(true);
   };
 
-  const handleSubCategoryImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSubCategoryImageFile(file);
-      const imageUrl = URL.createObjectURL(file);
-      setSubCategoryImagePreview(imageUrl);
-    }
-  };
+  // const handleSubCategoryImageChange = (
+  //   e: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setSubCategoryImageFile(file);
+  //     const imageUrl = URL.createObjectURL(file);
+  //     setSubCategoryImagePreview(imageUrl);
+  //   }
+  // };
 
   const handleSubCategorySubmit = async () => {
     if (!subCategoryForm.name.trim()) {
@@ -727,6 +746,7 @@ function CategoryForm({
             name: subCategoryForm.name,
             description: subCategoryForm.description,
             image: subCategoryImageFile || undefined,
+            imageUrl: subCategoryForm.imageUrl || undefined,
           }
         );
         if (response.data?.success) {
@@ -741,6 +761,7 @@ function CategoryForm({
           name: subCategoryForm.name,
           description: subCategoryForm.description,
           image: subCategoryImageFile || undefined,
+          imageUrl: subCategoryForm.imageUrl || undefined,
         });
         if (response.data?.success) {
           toast.success(t("categories.messages.subcategory_create_success"));
@@ -781,7 +802,7 @@ function CategoryForm({
   };
 
   const resetSubCategoryForm = () => {
-    setSubCategoryForm({ name: "", description: "" });
+    setSubCategoryForm({ name: "", description: "", imageUrl: "" });
     setSubCategoryImageFile(null);
     setSubCategoryImagePreview(null);
     setEditingSubCategory(null);
@@ -808,6 +829,8 @@ function CategoryForm({
 
       if (imageFile) {
         formData.append("image", imageFile);
+      } else if (category.imageUrl) {
+        formData.append("imageUrl", category.imageUrl);
       }
 
       let response;
@@ -929,24 +952,33 @@ function CategoryForm({
               </Label>
               <div className="flex items-start gap-4">
                 <div className="flex-1">
-                  <Input
-                    id="image"
-                    name="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="cursor-pointer border-[var(--border-color)] focus:border-primary"
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setMediaOpen(true)}
+                    className="w-full border-dashed border-2 py-8 h-auto flex flex-col gap-2 hover:bg-[var(--bg-secondary)]"
+                  >
+                    <ImageIcon className="h-6 w-6 text-[var(--text-secondary)]" />
+                    <span className="text-sm font-medium">Select Image</span>
+                    <span className="text-xs text-[var(--text-secondary)]">From Media Library or Upload</span>
+                  </Button>
+                  <MediaDialog
+                    open={mediaOpen}
+                    onOpenChange={setMediaOpen}
+                    onSelect={handleMediaSelect}
+                    type="image"
+                    title="Select Category Image"
                   />
                   <p className="mt-1 text-xs text-[var(--text-secondary)]">
                     {t("categories.form.image_recommendation")}
                   </p>
                 </div>
-                <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0">
+                <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0 overflow-hidden">
                   {imagePreview ? (
                     <img
-                      src={imagePreview}
+                      src={getImageUrl(imagePreview)}
                       alt={t("categories.form.preview_alt")}
-                      className="h-full w-full rounded-lg object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
                     <ImageIcon className="h-8 w-8 text-[var(--text-secondary)]" />
@@ -1046,7 +1078,7 @@ function CategoryForm({
                         <div className="flex-1 min-w-0 space-y-3">
                           {subCategory.image && (
                             <img
-                              src={subCategory.image}
+                              src={getImageUrl(subCategory.image)}
                               alt={subCategory.name}
                               className="w-full h-32 object-cover rounded-lg border border-[var(--border-color)]"
                             />
@@ -1169,23 +1201,33 @@ function CategoryForm({
               </Label>
               <div className="flex items-start gap-4">
                 <div className="flex-1">
-                  <Input
-                    id="subCategoryImage"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleSubCategoryImageChange}
-                    className="cursor-pointer border-[var(--border-color)] focus:border-primary"
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSubMediaOpen(true)}
+                    className="w-full border-dashed border-2 py-8 h-auto flex flex-col gap-2 hover:bg-[var(--bg-secondary)]"
+                  >
+                    <ImageIcon className="h-6 w-6 text-[var(--text-secondary)]" />
+                    <span className="text-sm font-medium">Select Image</span>
+                    <span className="text-xs text-[var(--text-secondary)]">From Media Library or Upload</span>
+                  </Button>
+                  <MediaDialog
+                    open={subMediaOpen}
+                    onOpenChange={setSubMediaOpen}
+                    onSelect={handleSubMediaSelect}
+                    type="image"
+                    title="Select Sub-Category Image"
                   />
                   <p className="mt-1 text-xs text-[var(--text-secondary)]">
                     {t("categories.subcategories.dialog.image_recommendation")}
                   </p>
                 </div>
-                <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0">
+                <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0 overflow-hidden">
                   {subCategoryImagePreview ? (
                     <img
-                      src={subCategoryImagePreview}
+                      src={getImageUrl(subCategoryImagePreview)}
                       alt={t("categories.subcategories.dialog.preview_alt")}
-                      className="h-full w-full rounded-lg object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
                     <ImageIcon className="h-8 w-8 text-[var(--text-secondary)]" />

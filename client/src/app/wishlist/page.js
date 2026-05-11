@@ -7,17 +7,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ClientOnly } from "@/components/client-only";
 import { DynamicIcon } from "@/components/dynamic-icon";
-import { fetchApi, formatCurrency } from "@/lib/utils";
+import { fetchApi, formatCurrency, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import { FiEye as Eye, FiHeart as Heart, FiStar as Star } from "react-icons/fi";
 import ProductQuickView from "@/components/ProductQuickView";
-
-// Helper function to format image URLs correctly
-const getImageUrl = (image) => {
-  if (!image) return "/placeholder.jpg";
-  if (image.startsWith("http")) return image;
-  return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
-};
 
 export default function WishlistPage() {
   const { isAuthenticated, loading } = useAuth();

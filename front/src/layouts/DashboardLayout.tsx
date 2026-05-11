@@ -23,6 +23,7 @@ import {
   Moon,
   Sun,
   Image as ImageIcon,
+  Images,
   Zap,
   LayoutGrid,
   Globe,
@@ -194,7 +195,7 @@ const hasPermissionFor = (
   }
 };
 
-export default function DashboardLayout() {
+export default function DashboardLayout({ children }: { children?: ReactNode }) {
   const { admin, isAuthenticated, logout, isLoading } = useAuth();
   const { t } = useLanguage();
   const { theme, toggle } = useTheme();
@@ -578,6 +579,16 @@ export default function DashboardLayout() {
 
 
                   {
+                    href: "/media",
+                    title: "Media Library",
+                    icon: <Images className="h-3 w-3" />,
+                    hasPermission: hasPermissionFor(
+                      admin,
+                      Resource.SETTINGS,
+                      Action.UPDATE
+                    ),
+                  },
+                  {
                     href: "/email-delivery-settings",
                     title: t("nav.email_delivery"),
                     hasPermission: hasPermissionFor(
@@ -945,6 +956,16 @@ export default function DashboardLayout() {
                     ),
                   },
                   {
+                    href: "/media",
+                    title: "Media Library",
+                    icon: <Images className="h-3 w-3" />,
+                    hasPermission: hasPermissionFor(
+                      admin,
+                      Resource.SETTINGS,
+                      Action.UPDATE
+                    ),
+                  },
+                  {
                     href: "/email-delivery-settings",
                     title: t("nav.email_delivery"),
                     hasPermission: hasPermissionFor(
@@ -1053,7 +1074,7 @@ export default function DashboardLayout() {
 
         {/* Main content area */}
         <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto bg-[var(--bg-secondary)] p-4 lg:p-8">
-          <Outlet />
+          {children || <Outlet />}
         </main>
       </div>
     </div>

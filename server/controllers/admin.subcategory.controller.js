@@ -89,7 +89,7 @@ export const getSubCategoryById = asyncHandler(async (req, res, next) => {
 // Create sub-category
 export const createSubCategory = asyncHandler(async (req, res, next) => {
   const { categoryId } = req.params;
-  const { name, description } = req.body;
+  const { name, description, imageUrl: bodyImageUrl } = req.body;
 
   if (!name) {
     throw new ApiError(400, "Name is required");
@@ -130,6 +130,8 @@ export const createSubCategory = asyncHandler(async (req, res, next) => {
       console.error("Error uploading image:", error);
       throw new ApiError(500, "Failed to upload image");
     }
+  } else if (bodyImageUrl) {
+    imageUrl = bodyImageUrl;
   }
 
   const subCategory = await prisma.subCategory.create({
@@ -165,7 +167,7 @@ export const createSubCategory = asyncHandler(async (req, res, next) => {
 // Update sub-category
 export const updateSubCategory = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { name, description, isActive } = req.body;
+  const { name, description, isActive, imageUrl: bodyImageUrl } = req.body;
 
   const existingSubCategory = await prisma.subCategory.findUnique({
     where: { id },
@@ -208,6 +210,8 @@ export const updateSubCategory = asyncHandler(async (req, res, next) => {
       console.error("Error uploading image:", error);
       throw new ApiError(500, "Failed to upload image");
     }
+  } else if (bodyImageUrl) {
+    imageUrl = bodyImageUrl;
   }
 
   const subCategory = await prisma.subCategory.update({

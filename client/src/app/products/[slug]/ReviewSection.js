@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { FiStar as Star, FiAlertCircle as AlertCircle } from "react-icons/fi";
-import { Button } from "@/components/ui/button";
+import { BsStarFill } from "react-icons/bs";
+import { FiAlertCircle } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { fetchApi } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -12,446 +12,149 @@ export default function ReviewSection({ product }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [reviewForm, setReviewForm] = useState({
-    rating: 0,
-    title: "",
-    comment: "",
-  });
   const [showForm, setShowForm] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+  const [hoverRating, setHoverRating] = useState(0);
+  const [form, setForm] = useState({ rating: 0, title: "", comment: "" });
+  const [errors, setErrors] = useState({});
 
-  const handleRatingClick = (rating) => {
-    setReviewForm((prev) => ({ ...prev, rating }));
-    // Clear error when rating is selected
-    if (formErrors.rating) {
-      setFormErrors((prev) => ({ ...prev, rating: null }));
-    }
+  const validate = () => {
+    const e = {};
+    if (!form.rating) e.rating = "Please select a rating";
+    if (!form.comment.trim()) e.comment = "Please write a review";
+    if (form.title.trim() && form.title.trim().length < 3) e.title = "Title too short";
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setReviewForm((prev) => ({ ...prev, [name]: value }));
-    // Clear error when field is updated
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: null }));
-    }
-  };
-
-  const validateForm = () => {
-    const errors = {};
-
-    if (reviewForm.rating === 0) {
-      errors.rating = "Please select a rating";
-    }
-
-    if (!reviewForm.comment.trim()) {
-      errors.comment = "Please provide a review comment";
-    }
-
-    // Title can be optional, but if provided, should be at least 3 characters
-    if (reviewForm.title.trim() && reviewForm.title.trim().length < 3) {
-      errors.title = "Title should be at least 3 characters";
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleReviewSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!isAuthenticated) {
       router.push(`/auth?redirect=/products/${product.slug}&review=true`);
       return;
     }
-
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!validate()) return;
     setIsSubmitting(true);
-
     try {
-      // Use the correct API endpoint from server/routes/user.routes.js
-      const response = await fetchApi(`/users/reviews`, {
+      const response = await fetchApi("/users/reviews", {
         method: "POST",
         credentials: "include",
         body: JSON.stringify({
           productId: product.id,
-          rating: reviewForm.rating,
-          title: reviewForm.title.trim() || "Review",
-          comment: reviewForm.comment.trim(),
+          rating: form.rating,
+          title: form.title.trim() || "Review",
+          comment: form.comment.trim(),
         }),
       });
-
       if (response.success) {
-        toast.success("Review submitted successfully!");
-        // Reset form
-        setReviewForm({ rating: 0, title: "", comment: "" });
+        toast.success("Review submitted!");
+        setForm({ rating: 0, title: "", comment: "" });
         setShowForm(false);
-        // Refresh the page to show the new review
         window.location.reload();
       } else {
         toast.error(response.message || "Failed to submit review");
       }
-    } catch (error) {
-      console.error("Error submitting review:", error);
-      toast.error(error.message || "Something went wrong. Please try again.");
+    } catch (err) {
+      toast.error(err.message || "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const canReview = () => {
-    // In a real app, you would check if the user has purchased this product
-    // For now, we'll just check if they're logged in
-    return isAuthenticated;
-  };
+  if (!showForm) {
+    return (
+      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+        <p className="text-sm text-gray-500">
+          {product.reviewCount > 0 ? `${product.reviewCount} verified reviews` : "No reviews yet"}
+        </p>
+        <button
+          onClick={() => {
+            if (!isAuthenticated) {
+              router.push(`/auth?redirect=/products/${product.slug}&review=true`);
+              return;
+            }
+            setShowForm(true);
+          }}
+          className="px-5 py-2.5 bg-trayalife-500 hover:bg-trayalife-600 text-white text-sm font-semibold rounded-xl transition-colors font-jost"
+        >
+          Write a Review
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {product.reviews && product.reviews.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-lg">Customer Reviews</h3>
-              <div className="flex items-center">
-                <div className="flex text-yellow-400 mr-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4"
-                      fill={
-                        i < Math.round(product.avgRating || 0)
-                          ? "currentColor"
-                          : "none"
-                      }
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-500">
-                  Based on {product.reviewCount} reviews
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-8 max-h-[600px] overflow-y-auto pr-4">
-              {product.reviews.map((review) => (
-                <div key={review.id} className="border-b border-gray-200 pb-8">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="font-semibold text-gray-800">
-                        {review.user.name}
-                      </p>
-                      <div className="flex text-yellow-400 mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="h-4 w-4"
-                            fill={i < review.rating ? "currentColor" : "none"}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <span className="text-sm text-gray-500">
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <h4 className="font-medium text-gray-800 mt-3">
-                    {review.title}
-                  </h4>
-                  <p className="mt-2 text-gray-600 leading-relaxed">
-                    {review.comment}
-                  </p>
-
-                  {/* Admin Reply */}
-                  {review.adminReply && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                      <p className="text-sm font-semibold text-blue-700">
-                        Response from Seller:
-                      </p>
-                      <p className="mt-1 text-sm text-gray-700">
-                        {review.adminReply}
-                      </p>
-                      {review.adminReplyDate && (
-                        <p className="mt-2 text-xs text-gray-500">
-                          Replied on{" "}
-                          {new Date(review.adminReplyDate).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-gray-50 p-6 rounded-md">
-            <h3 className="font-semibold text-lg mb-4">Write a Review</h3>
-
-            {!showForm ? (
-              <Button
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    router.push(
-                      `/auth?redirect=/products/${product.slug}&review=true`
-                    );
-                    return;
-                  }
-                  setShowForm(true);
-                }}
-                className="px-8 py-2 bg-primary hover:bg-primary/90 rounded-md"
+    <div className="pt-4 border-t border-gray-100">
+      <h3 className="text-base font-bold text-gray-800 mb-4 font-jost">Write a Review</h3>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
+        {/* Star rating */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Your Rating <span className="text-red-400">*</span>
+          </label>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onMouseEnter={() => setHoverRating(star)}
+                onMouseLeave={() => setHoverRating(0)}
+                onClick={() => { setForm((p) => ({ ...p, rating: star })); setErrors((p) => ({ ...p, rating: null })); }}
+                className="p-0.5 transition-transform hover:scale-110"
               >
-                Write a Review
-              </Button>
-            ) : (
-              <form onSubmit={handleReviewSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Rating <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <Star
-                        key={rating}
-                        className={`h-8 w-8 cursor-pointer ${
-                          formErrors.rating
-                            ? "text-red-200 hover:text-red-400"
-                            : "text-gray-300 hover:text-yellow-400"
-                        }`}
-                        fill={reviewForm.rating >= rating ? "#FBBF24" : "none"}
-                        onClick={() => handleRatingClick(rating)}
-                      />
-                    ))}
-                  </div>
-                  {formErrors.rating && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {formErrors.rating}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="title"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    Review Title
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={reviewForm.title}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
-                      formErrors.title ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="Give your review a title (optional)"
-                  />
-                  {formErrors.title && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {formErrors.title}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="comment"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    Review <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    id="comment"
-                    name="comment"
-                    value={reviewForm.comment}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
-                      formErrors.comment ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="Write your review here"
-                  ></textarea>
-                  {formErrors.comment && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {formErrors.comment}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    type="submit"
-                    className="px-8 py-2 bg-primary hover:bg-primary/90 rounded-md"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Submitting...
-                      </div>
-                    ) : (
-                      "Submit Review"
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowForm(false);
-                      setFormErrors({});
-                      setReviewForm({ rating: 0, title: "", comment: "" });
-                    }}
-                    className="px-6 rounded-md"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {!canReview() && (
-              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-700 text-sm flex items-center">
-                <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-                You need to purchase this product to write a review
-              </div>
-            )}
+                <BsStarFill
+                  className="h-7 w-7 transition-colors"
+                  style={{ color: star <= (hoverRating || form.rating) ? "#f59e0b" : "#e5e7eb" }}
+                />
+              </button>
+            ))}
           </div>
+          {errors.rating && <p className="text-xs text-red-500 mt-1">{errors.rating}</p>}
         </div>
-      ) : (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-gray-500 mb-6">
-            No reviews yet. Be the first to review this product!
-          </p>
-          <Button
-            onClick={() => {
-              if (!isAuthenticated) {
-                router.push(
-                  `/auth?redirect=/products/${product.slug}&review=true`
-                );
-                return;
-              }
-              setShowForm(true);
-            }}
-            className="px-8 py-2 bg-primary hover:bg-primary/90 rounded-md"
+
+        {/* Title */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Review Title <span className="text-gray-400 font-normal">(optional)</span></label>
+          <input
+            type="text"
+            value={form.title}
+            onChange={(e) => { setForm((p) => ({ ...p, title: e.target.value })); setErrors((p) => ({ ...p, title: null })); }}
+            placeholder="Summarize your experience"
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-trayalife-500 focus:border-trayalife-500 transition-colors ${errors.title ? "border-red-400" : "border-gray-200"}`}
+          />
+          {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+        </div>
+
+        {/* Comment */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Your Review <span className="text-red-400">*</span></label>
+          <textarea
+            value={form.comment}
+            onChange={(e) => { setForm((p) => ({ ...p, comment: e.target.value })); setErrors((p) => ({ ...p, comment: null })); }}
+            rows={4}
+            placeholder="Share your experience with this product"
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-trayalife-500 focus:border-trayalife-500 transition-colors resize-none ${errors.comment ? "border-red-400" : "border-gray-200"}`}
+          />
+          {errors.comment && <p className="text-xs text-red-500 mt-1">{errors.comment}</p>}
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 bg-trayalife-500 hover:bg-trayalife-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60 font-jost flex items-center gap-2"
           >
-            Write a Review
-          </Button>
-
-          {showForm && (
-            <div className="max-w-lg mx-auto mt-8 p-6 bg-white rounded-lg shadow-sm border">
-              <form onSubmit={handleReviewSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Rating <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex justify-center">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <Star
-                        key={rating}
-                        className={`h-8 w-8 cursor-pointer ${
-                          formErrors.rating
-                            ? "text-red-200 hover:text-red-400"
-                            : "text-gray-300 hover:text-yellow-400"
-                        }`}
-                        fill={reviewForm.rating >= rating ? "#FBBF24" : "none"}
-                        onClick={() => handleRatingClick(rating)}
-                      />
-                    ))}
-                  </div>
-                  {formErrors.rating && (
-                    <p className="text-sm text-red-500 mt-1 text-center">
-                      {formErrors.rating}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="title2"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    Review Title
-                  </label>
-                  <input
-                    type="text"
-                    id="title2"
-                    name="title"
-                    value={reviewForm.title}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
-                      formErrors.title ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="Give your review a title (optional)"
-                  />
-                  {formErrors.title && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {formErrors.title}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="comment2"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    Review <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    id="comment2"
-                    name="comment"
-                    value={reviewForm.comment}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
-                      formErrors.comment ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="Write your review here"
-                  ></textarea>
-                  {formErrors.comment && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {formErrors.comment}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex gap-3 justify-center">
-                  <Button
-                    type="submit"
-                    className="px-8 py-2 bg-primary hover:bg-primary/90 rounded-md"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Submitting...
-                      </div>
-                    ) : (
-                      "Submit Review"
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowForm(false);
-                      setFormErrors({});
-                      setReviewForm({ rating: 0, title: "", comment: "" });
-                    }}
-                    className="px-6 rounded-md"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </div>
-          )}
+            {isSubmitting && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+            {isSubmitting ? "Submitting…" : "Submit Review"}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setShowForm(false); setErrors({}); setForm({ rating: 0, title: "", comment: "" }); }}
+            className="px-5 py-2.5 border border-gray-200 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
         </div>
-      )}
+      </form>
     </div>
   );
 }

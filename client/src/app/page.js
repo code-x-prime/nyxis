@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { fetchApi, fetchProductsByType } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { FiArrowRight, FiZap, FiStar } from "react-icons/fi";
+import { fetchApi, fetchProductsByType, getImageUrl } from "@/lib/utils";
+import { FiArrowRight, FiZap } from "react-icons/fi";
 import {
   Carousel,
   CarouselContent,
@@ -21,66 +20,15 @@ import SupplementStoreUI from "@/components/SupplementStoreUI";
 import CategoryGrid from "@/components/CategoryGrid";
 import BrandCarousel from "@/components/BrandCarousel";
 import ProducCard from "@/components/ProducCard";
-import { DynamicIcon } from "@/components/dynamic-icon";
 import ShoppableVideoCarousel from "@/components/ShoppableVideoCarousel";
+import PromoCardBanner from "@/components/PromoCardBanner";
 
 /* ─────────────────────────────────────────────
    trayalife Section Heading — reusable across all sections
 ───────────────────────────────────────────── */
-const SectionHeading = ({
-  title,
-  subtitle,
-  icon: Icon,
-  dark = false,
-  align = "center",
-}) => (
-  <div className={`mb-6 ${align === "center" ? "text-center" : "text-left"}`}>
-    {Icon && (
-      <span
-        className={`inline-flex items-center gap-1.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] mb-2
-        ${dark ? "text-trayalife-gold" : "text-trayalife-500"}`}
-      >
-        <Icon className="h-3 w-3" />
-        {title}
-        <span
-          className={`inline-block w-7 h-[2px] rounded-full ml-1
-          ${dark ? "bg-trayalife-gold" : "bg-gradient-to-r from-trayalife-500 to-trayalife-gold"}`}
-        />
-      </span>
-    )}
-    <h2
-      className={`font-jost font-bold tracking-tight leading-tight
-        text-2xl md:text-3xl
-        ${dark ? "text-white" : "text-trayalife-dark"}`}
-    >
-      {title}
-    </h2>
-    {subtitle && (
-      <p
-        className={`mt-1.5 text-sm max-w-xl ${align === "center" ? "mx-auto" : ""}
-        ${dark ? "text-white/60" : "text-trayalife-gray-400"}`}
-      >
-        {subtitle}
-      </p>
-    )}
-    <div
-      className={`mt-3 h-[3px] w-10 rounded-full ${align === "center" ? "mx-auto" : ""}
-      bg-gradient-to-r from-trayalife-500 to-trayalife-gold`}
-    />
-  </div>
-);
-
 /* ─────────────────────────────────────────────
    Hero Carousel
 ───────────────────────────────────────────── */
-// Normalise banner image paths — handles Next.js static imports, full URLs, and CDN-relative paths
-const normaliseBannerSrc = (src) => {
-  if (!src) return null;
-  if (typeof src === "object") return src; // Next.js static import (StaticImageData)
-  if (src.startsWith("http")) return src;
-  return `https://desirediv-storage.blr1.digitaloceanspaces.com/${src}`;
-};
-
 const HeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState(null);
@@ -131,8 +79,8 @@ const HeroCarousel = () => {
     banners.length > 0
       ? banners.map((b, idx) => ({
         ctaLink: b.link || "/products",
-        img: normaliseBannerSrc(b.desktopImage) || (idx === 0 ? "/hero-banner-1.jpg" : "/hero-banner-2.jpg"),
-        smimg: (normaliseBannerSrc(b.mobileImage) || normaliseBannerSrc(b.desktopImage)) || (idx === 0 ? "/hero-banner-mobile-1.jpg" : "/hero-banner-mobile-2.jpg"),
+        img: getImageUrl(b.desktopImage) || (idx === 0 ? "/hero-banner-1.jpg" : "/hero-banner-2.jpg"),
+        smimg: (getImageUrl(b.mobileImage) || getImageUrl(b.desktopImage)) || (idx === 0 ? "/hero-banner-mobile-1.jpg" : "/hero-banner-mobile-2.jpg"),
         title: b.title || "New Collection",
         subtitle: b.subtitle || "Explore Now",
       }))
@@ -314,68 +262,68 @@ const FlashSaleCountdown = ({ endTime }) => {
    Featured Products Carousel
 ───────────────────────────────────────────── */
 const ProductSkeleton = () => (
-  <div className="bg-white rounded-xl overflow-hidden border border-trayalife-gray-200 animate-pulse">
-    <div className="aspect-square bg-trayalife-gray-100" />
+  <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse flex-shrink-0 w-[200px] md:w-[220px]">
+    <div className="aspect-square bg-gray-100" />
     <div className="p-3 space-y-2">
-      <div className="h-3.5 bg-trayalife-gray-100 rounded w-3/4" />
-      <div className="h-3.5 bg-trayalife-gray-100 rounded w-1/2" />
-      <div className="h-8 bg-trayalife-gray-100 rounded mt-3" />
+      <div className="h-3 bg-gray-100 rounded w-2/3" />
+      <div className="h-3.5 bg-gray-100 rounded w-full" />
+      <div className="h-3.5 bg-gray-100 rounded w-3/4" />
+      <div className="h-5 bg-gray-100 rounded w-1/2" />
+      <div className="h-9 bg-gray-100 rounded-xl mt-1" />
     </div>
   </div>
 );
 
-const FeaturedProducts = ({ products = [], isLoading = false, error = null }) => {
-  const [api, setApi] = useState(null);
-
-  useEffect(() => {
-    if (!api) return;
-    const onSelect = () => { };
-    api.on("select", onSelect);
-    return () => api.off("select", onSelect);
-  }, [api]);
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-        {[...Array(8)].map((_, i) => <ProductSkeleton key={i} />)}
-      </div>
-    );
-  }
-
-  if (error) return <p className="text-center py-8 text-red-500 text-sm">Failed to load products.</p>;
-  if (products.length === 0) return <p className="text-center py-8 text-trayalife-gray-400 text-sm">No products found.</p>;
+const FeaturedProducts = ({ products = [], isLoading = false, error = null, title, subtitle, viewAllHref = "/products", bgColor = "bg-[#e8f0f8]", labelColor = "text-trayalife-dark" }) => {
+  if (error) return null;
 
   return (
-    <>
-      <div className="relative">
-        <Carousel setApi={setApi} opts={{ align: "start", loop: true }} className="w-full">
-          <CarouselContent className="-ml-3 md:-ml-4">
-            {products.map((product, index) => (
-              <CarouselItem
-                key={product.id || product.slug || index}
-                className="pl-3 md:pl-4 basis-1/2 md:basis-1/4 lg:basis-1/6 py-4"
-              >
-                <ProducCard product={product} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="absolute left-1 top-1/2 -translate-y-1/2 h-9 w-9 bg-white hover:bg-trayalife-50 border-trayalife-gray-200 text-trayalife-500 shadow-card rounded-full" />
-          <CarouselNext className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 bg-white hover:bg-trayalife-50 border-trayalife-gray-200 text-trayalife-500 shadow-card rounded-full" />
-        </Carousel>
-      </div>
-
-      <div className="text-center mt-4">
-        <Link href="/products">
-          <Button
-            variant="outline"
-            className="font-jost font-semibold text-sm border-trayalife-500 text-trayalife-500 hover:bg-trayalife-500 hover:text-white rounded-full px-7 py-2.5 transition-all duration-200 group"
+    <div className={`${bgColor} rounded-2xl overflow-hidden`}>
+      <div className="flex items-stretch min-h-[320px] md:min-h-[360px]">
+        {/* Left label panel */}
+        <div className="flex-shrink-0 w-[130px] md:w-[160px] flex flex-col justify-center px-4 md:px-6 py-6 border-r border-black/5">
+          <h3 className={`font-jost font-bold text-lg md:text-xl leading-snug mb-3 ${labelColor}`}>
+            {title}
+          </h3>
+          {subtitle && (
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed">{subtitle}</p>
+          )}
+          <Link
+            href={viewAllHref}
+            className="inline-flex items-center gap-1 text-xs font-bold text-trayalife-500 hover:text-trayalife-600 uppercase tracking-wider group"
           >
-            View All Products
-            <FiArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-          </Button>
-        </Link>
+            View All
+            <FiArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        </div>
+
+        {/* Scrollable cards */}
+        <div className="flex-1 overflow-hidden relative">
+          {isLoading ? (
+            <div className="flex gap-3 p-4 overflow-hidden">
+              {[...Array(5)].map((_, i) => <ProductSkeleton key={i} />)}
+            </div>
+          ) : products.length === 0 ? null : (
+            <div className="relative h-full">
+              <Carousel opts={{ align: "start", loop: true, dragFree: true }} className="w-full h-full">
+                <CarouselContent className="-ml-3 py-4 pl-3 pr-4">
+                  {products.map((product, index) => (
+                    <CarouselItem
+                      key={product.id || product.slug || index}
+                      className="pl-3 basis-[200px] md:basis-[220px] lg:basis-[210px]"
+                    >
+                      <ProducCard product={product} />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-0 text-gray-600 shadow-md rounded-full z-10" />
+                <CarouselNext className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-0 text-gray-600 shadow-md rounded-full z-10" />
+              </Carousel>
+            </div>
+          )}
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 
@@ -444,31 +392,31 @@ const NewsletterSection = () => {
 /* ─────────────────────────────────────────────
    Reusable Product Section wrapper
 ───────────────────────────────────────────── */
+
 const ProductSection = ({
   title,
   subtitle,
   products,
   isLoading,
   error,
-  icon,
-  variant = "light", // "light" | "tint" | "dark"
+  viewAllHref = "/products",
+  palette, // pass explicit palette object {outer,card,label}
 }) => {
-  const bg = {
-    light: "bg-white",
-    tint: "bg-trayalife-50",
-    dark: "bg-trayalife-dark",
-  }[variant];
+  const p = palette || getSectionPalette();
 
   return (
-    <section className={`py-8 md:py-12 ${bg}`}>
-      <div className="max-w-7xl mx-auto px-4">
-        <SectionHeading
+    <section className={`py-6 md:py-8 ${p.outer}`}>
+      <div className=" mx-auto px-10">
+        <FeaturedProducts
+          products={products}
+          isLoading={isLoading}
+          error={error}
           title={title}
           subtitle={subtitle}
-          icon={icon}
-          dark={variant === "dark"}
+          viewAllHref={viewAllHref}
+          bgColor={p.card}
+          labelColor={p.label}
         />
-        <FeaturedProducts products={products} isLoading={isLoading} error={error} />
       </div>
     </section>
   );
@@ -482,17 +430,7 @@ export default function Home() {
   const [bestsellerProducts, setBestsellerProducts] = useState([]);
   const [trendingProducts, setTrendingProducts] = useState([]);
   const [newProducts, setNewProducts] = useState([]);
-  const [kurtisProducts, setKurtisProducts] = useState([]);
-  const [suitsProducts, setSuitsProducts] = useState([]);
-  const [sareesProducts, setSareesProducts] = useState([]);
-  const [westernProducts, setWesternProducts] = useState([]);
-  const [saleProducts, setSaleProducts] = useState([]);
-  const [premiumProducts, setPremiumProducts] = useState([]);
-  const [summerProducts, setSummerProducts] = useState([]);
-  const [winterProducts, setWinterProducts] = useState([]);
-  const [partyProducts, setPartyProducts] = useState([]);
-  const [casualProducts, setCasualProducts] = useState([]);
-  const [formalProducts, setFormalProducts] = useState([]);
+
   const [flashSales, setFlashSales] = useState([]);
   const [productSections, setProductSections] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -620,40 +558,25 @@ export default function Home() {
       {/* TOP BRANDS */}
       <BrandCarousel tag="TOP" title="TOP BRANDS" />
 
-      {/* FEATURED */}
+      {/* FEATURED — sky blue */}
       {featuredProducts.length > 0 && (
-        <ProductSection
-          title="Featured Products"
-          subtitle="Curated picks across beauty & wellness"
-          products={featuredProducts}
-          isLoading={productsLoading}
-          error={error}
-          variant="light"
-        />
+        <ProductSection title="Featured Products" subtitle="Curated picks across beauty & wellness" products={featuredProducts} isLoading={productsLoading} error={error}
+          palette={{ outer: "bg-[#eaf4fb]", card: "bg-[#d4ecf7]", label: "text-[#1a3a4f]" }} />
       )}
 
-      {/* BEST SELLERS */}
+      {/* BEST SELLERS — mint green */}
       {bestsellerProducts.length > 0 && (
-        <ProductSection
-          title="Best Sellers"
-          subtitle="Most loved products by our community"
-          products={bestsellerProducts}
-          isLoading={productsLoading}
-          error={error}
-          variant="tint"
-        />
+        <ProductSection title="Best Sellers" subtitle="Most loved products by our community" products={bestsellerProducts} isLoading={productsLoading} error={error}
+          palette={{ outer: "bg-[#edf7f0]", card: "bg-[#d0edd8]", label: "text-[#1a3a2a]" }} />
       )}
 
-      {/* TRENDING */}
+      {/* PROMO CARDS — after Best Sellers */}
+      <PromoCardBanner heading="Summer Skin Saviours 🌟" />
+
+      {/* TRENDING — lavender */}
       {trendingProducts.length > 0 && (
-        <ProductSection
-          title="Trending Now"
-          subtitle="What everyone is talking about this season"
-          products={trendingProducts}
-          isLoading={productsLoading}
-          error={error}
-          variant="light"
-        />
+        <ProductSection title="Trending Now" subtitle="What everyone is talking about this season" products={trendingProducts} isLoading={productsLoading} error={error}
+          palette={{ outer: "bg-[#f3eefb]", card: "bg-[#e4d9f7]", label: "text-[#2d1a4f]" }} />
       )}
 
       <SupplementStoreUI />
@@ -663,46 +586,27 @@ export default function Home() {
 
       <CategoryGrid />
 
-      {/* NEW ARRIVALS */}
+      {/* PROMO CARDS — after Shop By Category */}
+      <PromoCardBanner heading="Trending Collections 🔥" />
+
+      {/* NEW ARRIVALS — peach */}
       {newProducts.length > 0 && (
-        <ProductSection
-          title="New Arrivals"
-          subtitle="Fresh products just added to our collection"
-          products={newProducts}
-          isLoading={productsLoading}
-          error={error}
-          variant="tint"
-        />
-      )}
-
-      {/* ── CATEGORY SECTIONS ── */}
-      {kurtisProducts.length > 0 && <ProductSection title="Kurtis" subtitle="Elegant kurtis for every occasion" products={kurtisProducts} isLoading={productsLoading} error={error} variant="light" />}
-      {suitsProducts.length > 0 && <ProductSection title="Suits" subtitle="Stylish suit sets for women" products={suitsProducts} isLoading={productsLoading} error={error} variant="tint" />}
-      {sareesProducts.length > 0 && <ProductSection title="Sarees" subtitle="Traditional sarees for special occasions" products={sareesProducts} isLoading={productsLoading} error={error} variant="light" />}
-      {westernProducts.length > 0 && <ProductSection title="Western" subtitle="Modern wear for the contemporary woman" products={westernProducts} isLoading={productsLoading} error={error} variant="tint" />}
-      {premiumProducts.length > 0 && <ProductSection title="Premium Collection" subtitle="Exclusive high-quality clothing" products={premiumProducts} isLoading={productsLoading} error={error} variant="light" />}
-      {summerProducts.length > 0 && <ProductSection title="Summer Collection" subtitle="Light & breezy summer essentials" products={summerProducts} isLoading={productsLoading} error={error} variant="tint" />}
-      {winterProducts.length > 0 && <ProductSection title="Winter Collection" subtitle="Warm and cozy winter wear" products={winterProducts} isLoading={productsLoading} error={error} variant="light" />}
-      {partyProducts.length > 0 && <ProductSection title="Party Wear" subtitle="Stand out at every occasion" products={partyProducts} isLoading={productsLoading} error={error} variant="tint" />}
-      {casualProducts.length > 0 && <ProductSection title="Casual Wear" subtitle="Comfortable everyday clothing" products={casualProducts} isLoading={productsLoading} error={error} variant="light" />}
-      {formalProducts.length > 0 && <ProductSection title="Formal Wear" subtitle="Professional & elegant attire" products={formalProducts} isLoading={productsLoading} error={error} variant="tint" />}
-
-      {/* Sale section — dark variant */}
-      {saleProducts.length > 0 && (
-        <ProductSection
-          title="Sale & Offers"
-          subtitle="Great deals on selected items — today only"
-          products={saleProducts}
-          isLoading={productsLoading}
-          error={error}
-          variant="dark"
-        />
+        <ProductSection title="New Arrivals" subtitle="Fresh products just added to our collection" products={newProducts} isLoading={productsLoading} error={error}
+          palette={{ outer: "bg-[#fef4ec]", card: "bg-[#fde3c8]", label: "text-[#4f2a0a]" }} />
       )}
 
       {/* ── DYNAMIC ADMIN SECTIONS ── */}
       {productSections.map((section, index) => {
         if (!section.products?.length) return null;
         const isDark = section.color?.includes("black") || section.color?.includes("dark");
+        const dynPalettes = [
+          { outer: "bg-[#f0faf4]", card: "bg-[#cceedd]", label: "text-[#0f3322]" },
+          { outer: "bg-[#fdf5e8]", card: "bg-[#fbe8be]", label: "text-[#4a3200]" },
+          { outer: "bg-[#fce8ee]", card: "bg-[#f8ccd8]", label: "text-[#4a0a1e]" },
+          { outer: "bg-[#e8f6fd]", card: "bg-[#c8e8f8]", label: "text-[#0a2a3f]" },
+          { outer: "bg-[#fff8e1]", card: "bg-[#ffedb0]", label: "text-[#4a3200]" },
+          { outer: "bg-[#f5f0fb]", card: "bg-[#e0d0f5]", label: "text-[#2a0a4a]" },
+        ];
         return (
           <ProductSection
             key={section.id}
@@ -711,8 +615,9 @@ export default function Home() {
             products={section.products}
             isLoading={productsLoading}
             error={error}
-            icon={section.icon ? () => <DynamicIcon name={section.icon} className="h-3.5 w-3.5" /> : undefined}
-            variant={isDark ? "dark" : index % 2 === 0 ? "light" : "tint"}
+            palette={isDark
+              ? { outer: "bg-trayalife-dark", card: "bg-[#1a3a32]", label: "text-white" }
+              : dynPalettes[index % dynPalettes.length]}
           />
         );
       })}

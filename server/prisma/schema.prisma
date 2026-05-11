@@ -313,6 +313,7 @@ model ProductVariant {
   shippingBreadth Float? // Breadth in cm
   shippingHeight  Float? // Height in cm
   shippingWeight  Float? // Weight in kg
+  videoUrl        String?                 // Optional variant video (max 10MB)
   attributes      VariantAttributeValue[]
   product         Product                 @relation(fields: [productId], references: [id], onDelete: Cascade)
   images          ProductVariantImage[]
@@ -774,6 +775,22 @@ model Brand {
   updatedAt DateTime      @updatedAt
   products  Product[]
   coupons   CouponBrand[]
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  url       String   @unique
+  key       String   @unique
+  name      String
+  type      String   // image, video, document
+  mimeType  String
+  size      Int      // bytes
+  provider  String   // digitalocean, s3, etc
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([createdAt])
 }
 
 enum UserRole {

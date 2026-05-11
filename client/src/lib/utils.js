@@ -203,3 +203,11 @@ export async function fetchProductsByType(productType, limit = 8) {
     throw error;
   }
 }
+
+// Helper function to format image URLs correctly — handles Next.js static imports, full URLs, and CDN-relative paths
+export function getImageUrl(image) {
+  if (!image) return "/placeholder.jpg";
+  if (typeof image === "object") return image; // Next.js static import (StaticImageData)
+  if (image.startsWith("http")) return image;
+  return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+}

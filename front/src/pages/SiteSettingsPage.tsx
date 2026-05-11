@@ -28,6 +28,7 @@ import {
   Trash2,
   Cloud,
   LogIn,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/api";
@@ -144,7 +145,7 @@ export default function SiteSettingsPage() {
     shiprocketEnabled: false,
   });
 
-  const [_storageConfig, setStorageConfig] = useState<{
+  const [storageConfig, setStorageConfig] = useState<{
     activeProvider: string | null;
     uploadFolder: string;
     spacesAccessKey?: string;
@@ -1210,6 +1211,17 @@ export default function SiteSettingsPage() {
 
 
         <TabsContent value="media" className="space-y-6">
+          {!storageConfig?.activeProvider && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 flex items-start gap-4 mb-2">
+              <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-100">Media Storage Required</h3>
+                <p className="text-amber-800/80 dark:text-amber-200/80 mt-1">
+                  You haven't configured an active storage provider. The Media Library and all image upload features (products, banners, etc.) will be disabled until you select and configure a provider below.
+                </p>
+              </div>
+            </div>
+          )}
           <Card className="bg-[var(--bg-card)] border-[var(--border-color)]">
             <CardHeader>
               <CardTitle className="text-[var(--text-primary)]">Media Storage (Image Config)</CardTitle>
@@ -1245,93 +1257,99 @@ export default function SiteSettingsPage() {
               </div>
 
               {/* Digital Ocean */}
-              <div className="space-y-3 rounded-lg border border-[var(--border-color)] p-4">
-                <h4 className="font-medium text-[var(--text-primary)]">Digital Ocean Spaces</h4>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
-                    <Label className="text-xs">Access Key</Label>
-                    <Input value={storageForm.spacesAccessKey} onChange={(e) => setStorageForm({ ...storageForm, spacesAccessKey: e.target.value })} className="mt-1" placeholder="DO00..." />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Secret Key</Label>
-                    <Input type="password" value={storageForm.spacesSecretKey} onChange={(e) => setStorageForm({ ...storageForm, spacesSecretKey: e.target.value })} className="mt-1" placeholder="Leave blank to keep" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Bucket</Label>
-                    <Input value={storageForm.spacesBucket} onChange={(e) => setStorageForm({ ...storageForm, spacesBucket: e.target.value })} className="mt-1" placeholder="my-bucket" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Region</Label>
-                    <Input value={storageForm.spacesRegion} onChange={(e) => setStorageForm({ ...storageForm, spacesRegion: e.target.value })} className="mt-1" placeholder="blr1" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label className="text-xs">Endpoint</Label>
-                    <Input value={storageForm.spacesEndpoint} onChange={(e) => setStorageForm({ ...storageForm, spacesEndpoint: e.target.value })} className="mt-1" placeholder="https://blr1.digitaloceanspaces.com" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label className="text-xs">CDN URL (optional)</Label>
-                    <Input value={storageForm.spacesCdnUrl} onChange={(e) => setStorageForm({ ...storageForm, spacesCdnUrl: e.target.value })} className="mt-1" placeholder="https://cdn.example.com" />
+              {storageForm.activeProvider === "DIGITAL_OCEAN" && (
+                <div className="space-y-3 rounded-lg border border-[var(--border-color)] p-4 bg-[var(--bg-secondary)]/30">
+                  <h4 className="font-medium text-[var(--text-primary)]">Digital Ocean Spaces Settings</h4>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <Label className="text-xs">Access Key</Label>
+                      <Input value={storageForm.spacesAccessKey} onChange={(e) => setStorageForm({ ...storageForm, spacesAccessKey: e.target.value })} className="mt-1" placeholder="DO00..." />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Secret Key</Label>
+                      <Input type="password" value={storageForm.spacesSecretKey} onChange={(e) => setStorageForm({ ...storageForm, spacesSecretKey: e.target.value })} className="mt-1" placeholder="Leave blank to keep" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Bucket</Label>
+                      <Input value={storageForm.spacesBucket} onChange={(e) => setStorageForm({ ...storageForm, spacesBucket: e.target.value })} className="mt-1" placeholder="my-bucket" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Region</Label>
+                      <Input value={storageForm.spacesRegion} onChange={(e) => setStorageForm({ ...storageForm, spacesRegion: e.target.value })} className="mt-1" placeholder="blr1" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-xs">Endpoint</Label>
+                      <Input value={storageForm.spacesEndpoint} onChange={(e) => setStorageForm({ ...storageForm, spacesEndpoint: e.target.value })} className="mt-1" placeholder="https://blr1.digitaloceanspaces.com" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-xs">CDN URL (optional)</Label>
+                      <Input value={storageForm.spacesCdnUrl} onChange={(e) => setStorageForm({ ...storageForm, spacesCdnUrl: e.target.value })} className="mt-1" placeholder="https://cdn.example.com" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Cloudflare R2 */}
-              <div className="space-y-3 rounded-lg border border-[var(--border-color)] p-4">
-                <h4 className="font-medium text-[var(--text-primary)]">Cloudflare R2</h4>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
-                    <Label className="text-xs">Account ID</Label>
-                    <Input value={storageForm.r2AccountId} onChange={(e) => setStorageForm({ ...storageForm, r2AccountId: e.target.value })} className="mt-1" placeholder="ab34b1de..." />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Access Key ID</Label>
-                    <Input value={storageForm.r2AccessKeyId} onChange={(e) => setStorageForm({ ...storageForm, r2AccessKeyId: e.target.value })} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Secret Access Key</Label>
-                    <Input type="password" value={storageForm.r2SecretAccessKey} onChange={(e) => setStorageForm({ ...storageForm, r2SecretAccessKey: e.target.value })} className="mt-1" placeholder="Leave blank to keep" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Bucket Name</Label>
-                    <Input value={storageForm.r2BucketName} onChange={(e) => setStorageForm({ ...storageForm, r2BucketName: e.target.value })} className="mt-1" placeholder="shresthaacademy" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label className="text-xs">Public URL</Label>
-                    <Input value={storageForm.r2PublicUrl} onChange={(e) => setStorageForm({ ...storageForm, r2PublicUrl: e.target.value })} className="mt-1" placeholder="https://pub-xxx.r2.dev" />
+              {storageForm.activeProvider === "CLOUDFLARE_R2" && (
+                <div className="space-y-3 rounded-lg border border-[var(--border-color)] p-4 bg-[var(--bg-secondary)]/30">
+                  <h4 className="font-medium text-[var(--text-primary)]">Cloudflare R2 Settings</h4>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <Label className="text-xs">Account ID</Label>
+                      <Input value={storageForm.r2AccountId} onChange={(e) => setStorageForm({ ...storageForm, r2AccountId: e.target.value })} className="mt-1" placeholder="ab34b1de..." />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Access Key ID</Label>
+                      <Input value={storageForm.r2AccessKeyId} onChange={(e) => setStorageForm({ ...storageForm, r2AccessKeyId: e.target.value })} className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Secret Access Key</Label>
+                      <Input type="password" value={storageForm.r2SecretAccessKey} onChange={(e) => setStorageForm({ ...storageForm, r2SecretAccessKey: e.target.value })} className="mt-1" placeholder="Leave blank to keep" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Bucket Name</Label>
+                      <Input value={storageForm.r2BucketName} onChange={(e) => setStorageForm({ ...storageForm, r2BucketName: e.target.value })} className="mt-1" placeholder="shresthaacademy" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-xs">Public URL</Label>
+                      <Input value={storageForm.r2PublicUrl} onChange={(e) => setStorageForm({ ...storageForm, r2PublicUrl: e.target.value })} className="mt-1" placeholder="https://pub-xxx.r2.dev" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* AWS S3 */}
-              <div className="space-y-3 rounded-lg border border-[var(--border-color)] p-4">
-                <h4 className="font-medium text-[var(--text-primary)]">AWS S3</h4>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
-                    <Label className="text-xs">Access Key ID</Label>
-                    <Input value={storageForm.s3AccessKeyId} onChange={(e) => setStorageForm({ ...storageForm, s3AccessKeyId: e.target.value })} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Secret Access Key</Label>
-                    <Input type="password" value={storageForm.s3SecretAccessKey} onChange={(e) => setStorageForm({ ...storageForm, s3SecretAccessKey: e.target.value })} className="mt-1" placeholder="Leave blank to keep" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Bucket Name</Label>
-                    <Input value={storageForm.s3BucketName} onChange={(e) => setStorageForm({ ...storageForm, s3BucketName: e.target.value })} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Region</Label>
-                    <Input value={storageForm.s3Region} onChange={(e) => setStorageForm({ ...storageForm, s3Region: e.target.value })} className="mt-1" placeholder="ap-south-1" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label className="text-xs">Custom Endpoint (optional)</Label>
-                    <Input value={storageForm.s3Endpoint} onChange={(e) => setStorageForm({ ...storageForm, s3Endpoint: e.target.value })} className="mt-1" placeholder="https://s3.amazonaws.com" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label className="text-xs">Public URL (optional)</Label>
-                    <Input value={storageForm.s3PublicUrl} onChange={(e) => setStorageForm({ ...storageForm, s3PublicUrl: e.target.value })} className="mt-1" placeholder="https://bucket.s3.region.amazonaws.com" />
+              {storageForm.activeProvider === "AWS_S3" && (
+                <div className="space-y-3 rounded-lg border border-[var(--border-color)] p-4 bg-[var(--bg-secondary)]/30">
+                  <h4 className="font-medium text-[var(--text-primary)]">AWS S3 Settings</h4>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <Label className="text-xs">Access Key ID</Label>
+                      <Input value={storageForm.s3AccessKeyId} onChange={(e) => setStorageForm({ ...storageForm, s3AccessKeyId: e.target.value })} className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Secret Access Key</Label>
+                      <Input type="password" value={storageForm.s3SecretAccessKey} onChange={(e) => setStorageForm({ ...storageForm, s3SecretAccessKey: e.target.value })} className="mt-1" placeholder="Leave blank to keep" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Bucket Name</Label>
+                      <Input value={storageForm.s3BucketName} onChange={(e) => setStorageForm({ ...storageForm, s3BucketName: e.target.value })} className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Region</Label>
+                      <Input value={storageForm.s3Region} onChange={(e) => setStorageForm({ ...storageForm, s3Region: e.target.value })} className="mt-1" placeholder="ap-south-1" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-xs">Custom Endpoint (optional)</Label>
+                      <Input value={storageForm.s3Endpoint} onChange={(e) => setStorageForm({ ...storageForm, s3Endpoint: e.target.value })} className="mt-1" placeholder="https://s3.amazonaws.com" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-xs">Public URL (optional)</Label>
+                      <Input value={storageForm.s3PublicUrl} onChange={(e) => setStorageForm({ ...storageForm, s3PublicUrl: e.target.value })} className="mt-1" placeholder="https://bucket.s3.region.amazonaws.com" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <Button onClick={handleSaveStorage} disabled={isSaving}>
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

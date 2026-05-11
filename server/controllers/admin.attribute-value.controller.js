@@ -107,9 +107,11 @@ export const createAttributeValue = asyncHandler(async (req, res, next) => {
     throw new ApiError(400, "This value already exists for this attribute");
   }
 
-  // Handle image upload if provided
+  // Handle image upload or library selection
   let imageUrl = null;
-  if (req.file) {
+  if (req.body.imageUrl) {
+    imageUrl = req.body.imageUrl;
+  } else if (req.file) {
     try {
       imageUrl = await processAndUploadImage(req.file, "attribute-values");
     } catch (error) {
@@ -185,9 +187,15 @@ export const updateAttributeValue = asyncHandler(async (req, res, next) => {
     }
   }
 
-  // Handle image upload if provided
+  // Handle image upload or library selection
   let imageUrl = existingValue.image;
-  if (req.file) {
+  if (req.body.imageUrl) {
+    // Delete old image if it exists and is different
+    if (existingValue.image && existingValue.image !== req.body.imageUrl) {
+      await deleteFromS3(existingValue.image);
+    }
+    imageUrl = req.body.imageUrl;
+  } else if (req.file) {
     try {
       // Delete old image if exists
       if (existingValue.image) {

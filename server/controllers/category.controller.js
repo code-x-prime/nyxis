@@ -310,7 +310,7 @@ export const getCategoryById = asyncHandler(async (req, res) => {
 
 // Create a new category
 export const createCategory = asyncHandler(async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, imageUrl: bodyImageUrl } = req.body;
 
   if (!name) {
     throw new ApiError(400, "Category name is required");
@@ -334,6 +334,8 @@ export const createCategory = asyncHandler(async (req, res) => {
   let imageUrl = null;
   if (req.file) {
     imageUrl = await processAndUploadImage(req.file);
+  } else if (bodyImageUrl) {
+    imageUrl = bodyImageUrl;
   }
 
   // Create category
@@ -363,7 +365,7 @@ export const createCategory = asyncHandler(async (req, res) => {
 // Update category
 export const updateCategory = asyncHandler(async (req, res) => {
   const { categoryId } = req.params;
-  const { name, description } = req.body;
+  const { name, description, imageUrl: bodyImageUrl } = req.body;
 
   // Check if category exists
   const category = await prisma.category.findUnique({
@@ -413,6 +415,8 @@ export const updateCategory = asyncHandler(async (req, res) => {
 
     // Upload new image
     updateData.image = await processAndUploadImage(req.file);
+  } else if (bodyImageUrl) {
+    updateData.image = bodyImageUrl;
   }
 
   // Update category

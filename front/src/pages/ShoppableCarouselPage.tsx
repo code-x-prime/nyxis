@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import MediaDialog from "@/components/MediaDialog";
 
 const VIDEO_MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -78,6 +79,9 @@ export default function ShoppableCarouselPage() {
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const [mediaUrl, setMediaUrl] = useState<string>("");
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
 
   const fetchCarousel = async () => {
     try {
@@ -146,16 +150,30 @@ export default function ShoppableCarouselPage() {
       }
       if (accepted[0]) {
         setMediaFile(accepted[0]);
+        setMediaUrl("");
         setMediaPreview(URL.createObjectURL(accepted[0]));
       }
     },
   });
 
+  const handleMediaSelect = (media: any[]) => {
+    if (media.length > 0) {
+      const selected = media[0];
+      setMediaUrl(selected.url);
+      setMediaFile(null);
+      setMediaPreview(selected.url);
+    }
+    setShowMediaLibrary(false);
+  };
+
   useDropzone({
     accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
     multiple: false,
     onDrop: (accepted) => {
-      if (accepted[0]) setThumbnailFile(accepted[0]);
+      if (accepted[0]) {
+        setThumbnailFile(accepted[0]);
+        setThumbnailUrl("");
+      }
     },
   });
 
@@ -169,7 +187,9 @@ export default function ShoppableCarouselPage() {
     });
     setMediaFile(null);
     setMediaPreview(null);
+    setMediaUrl("");
     setThumbnailFile(null);
+    setThumbnailUrl("");
     setEditingItem(null);
     setShowAddDialog(false);
   };
@@ -195,8 +215,12 @@ export default function ShoppableCarouselPage() {
       fd.append("mediaType", mediaType);
       fd.append("textOverlay", textOverlay);
       fd.append("productId", (productId && productId !== "__none__") ? productId : "");
-      if (mediaType === "UPLOAD" && mediaFile) fd.append("media", mediaFile);
+      if (mediaType === "UPLOAD") {
+        if (mediaFile) fd.append("media", mediaFile);
+        if (mediaUrl) fd.append("mediaUrl", mediaUrl);
+      }
       if (thumbnailFile) fd.append("thumbnail", thumbnailFile);
+      if (thumbnailUrl) fd.append("thumbnailUrl", thumbnailUrl);
       if (mediaType === "YOUTUBE") fd.append("youtubeUrl", youtubeUrl.trim());
       if (mediaType === "INSTAGRAM") fd.append("instagramUrl", instagramUrl.trim());
 
@@ -223,8 +247,12 @@ export default function ShoppableCarouselPage() {
       fd.append("mediaType", mediaType);
       fd.append("textOverlay", textOverlay);
       fd.append("productId", (productId && productId !== "__none__") ? productId : "");
-      if (mediaType === "UPLOAD" && mediaFile) fd.append("media", mediaFile);
+      if (mediaType === "UPLOAD") {
+        if (mediaFile) fd.append("media", mediaFile);
+        if (mediaUrl) fd.append("mediaUrl", mediaUrl);
+      }
       if (thumbnailFile) fd.append("thumbnail", thumbnailFile);
+      if (thumbnailUrl) fd.append("thumbnailUrl", thumbnailUrl);
       if (mediaType === "YOUTUBE") fd.append("youtubeUrl", youtubeUrl.trim());
       if (mediaType === "INSTAGRAM") fd.append("instagramUrl", instagramUrl.trim());
 
@@ -251,6 +279,8 @@ export default function ShoppableCarouselPage() {
       productId: item.productId || "",
     });
     setMediaPreview(item.mediaUrl || null);
+    setMediaUrl(item.mediaType === "UPLOAD" ? (item.mediaUrl || "") : "");
+    setThumbnailUrl(item.thumbnailUrl || "");
     setShowAddDialog(true);
   };
 
@@ -387,28 +417,45 @@ export default function ShoppableCarouselPage() {
                   )}
                 >
                   <input {...mediaDropzone.getInputProps()} />
-                  {mediaPreview ? (
-                    <div className="relative inline-block">
-                      {mediaFile?.type.startsWith("video/") ? (
-                        <video src={mediaPreview} className="max-h-48 rounded" controls />
-                      ) : (
-                        <img src={mediaPreview} alt="Preview" className="max-h-48 rounded" />
-                      )}
-                    </div>
-                  ) : editingItem?.mediaUrl ? (
-                    <div className="relative inline-block">
-                      {editingItem.mediaType === "UPLOAD" && editingItem.mediaUrl?.match(/\.(mp4|webm)/i) ? (
-                        <video src={editingItem.mediaUrl} className="max-h-48 rounded" controls />
-                      ) : (
-                        <img src={editingItem.mediaUrl} alt="Current" className="max-h-48 rounded" />
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-[var(--text-secondary)]">Drop image or video here (video max 10MB)</p>
-                  )}
+                  <div className="flex flex-col items-center gap-4">
+                    {mediaPreview || editingItem?.mediaUrl ? (
+                      <div className="relative inline-block">
+                        {((mediaFile?.type.startsWith("video/") || (!mediaFile && mediaPreview?.match(/\.(mp4|webm)/i))) || 
+                          (!mediaFile && !mediaUrl && editingItem?.mediaType === "UPLOAD" && editingItem?.mediaUrl?.match(/\.(mp4|webm)/i))) ? (
+                          <video src={mediaPreview || editingItem?.mediaUrl || ""} className="max-h-48 rounded" controls />
+                        ) : (
+                          <img src={mediaPreview || editingItem?.mediaUrl || ""} alt="Preview" className="max-h-48 rounded" />
+                        )}
+                        <div className="mt-4 flex justify-center gap-4">
+                           <Button type="button" variant="outline" size="sm" onClick={() => { setMediaFile(null); setMediaPreview(null); setMediaUrl(""); }}>
+                             Remove
+                           </Button>
+                           <Button type="button" variant="outline" size="sm" onClick={() => setShowMediaLibrary(true)}>
+                             Change from Library
+                           </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <p className="text-[var(--text-secondary)]">Drop image or video here (video max 10MB)</p>
+                        <div className="flex items-center justify-center gap-2">
+                          <Button type="button" variant="secondary" onClick={() => setShowMediaLibrary(true)}>
+                            Select from Media Library
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
+
+            <MediaDialog
+              open={showMediaLibrary}
+              onOpenChange={setShowMediaLibrary}
+              onSelect={handleMediaSelect}
+              type={formData.mediaType === "UPLOAD" ? "all" : "image"}
+            />
 
             {formData.mediaType === "YOUTUBE" && (
               <div>

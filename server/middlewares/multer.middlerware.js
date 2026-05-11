@@ -23,7 +23,8 @@ export const processAndUploadImage = async (file, subfolder = "images") => {
             .resize(1200, null, { withoutEnlargement: true })
             .toBuffer();
 
-        const contentType = fileExtension === "png" ? "image/png" : fileExtension === "gif" ? "image/gif" : "image/jpeg";
+        const contentTypeMap = { png: "image/png", gif: "image/gif", webp: "image/webp", avif: "image/avif" };
+        const contentType = contentTypeMap[fileExtension] || "image/jpeg";
 
         const filename = await uploadFile(processedBuffer, key, {
             contentType,
