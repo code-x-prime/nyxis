@@ -124,37 +124,48 @@ export const updateSiteSettings = asyncHandler(async (req, res) => {
 });
 
 export const testRazorpayConnection = asyncHandler(async (req, res) => {
+  const { keyId, keySecret } = req.body;
   const settings = await prisma.siteSettings.findFirst();
 
-  if (!settings?.razorpayEnabled || !settings?.razorpayKeyId) {
-    return res.status(200).json(
-      new ApiResponsive(200, { connected: false }, "Razorpay not configured")
-    );
+  const finalKeyId = keyId || settings?.razorpayKeyId;
+  let finalKeySecret = keySecret;
+
+  // If secret not in body, use stored secret
+  if (!finalKeySecret && settings?.razorpayKeySecret) {
+    finalKeySecret = settings.razorpayKeySecret;
+    if (finalKeySecret.startsWith("enc:")) {
+      finalKeySecret = decrypt(finalKeySecret.replace("enc:", ""));
+    }
   }
 
-  let secret = settings.razorpayKeySecret;
-  if (secret?.startsWith("enc:")) {
-    secret = decrypt(secret.replace("enc:", ""));
+  // Handle mask from frontend
+  if (finalKeySecret === "••••••••" && settings?.razorpayKeySecret) {
+    finalKeySecret = settings.razorpayKeySecret;
+    if (finalKeySecret.startsWith("enc:")) {
+      finalKeySecret = decrypt(finalKeySecret.replace("enc:", ""));
+    }
   }
 
-  if (!secret) {
+  if (!finalKeyId || !finalKeySecret) {
     return res.status(200).json(
-      new ApiResponsive(200, { connected: false }, "Razorpay secret not set")
+      new ApiResponsive(200, { connected: false }, "Razorpay Key ID or Secret not provided")
     );
   }
 
   try {
     const rzp = new Razorpay({
-      key_id: settings.razorpayKeyId,
-      key_secret: secret,
+      key_id: finalKeyId,
+      key_secret: finalKeySecret,
     });
+    // Use a simple API call to verify keys
     await rzp.payments.all({ count: 1 });
     res.status(200).json(
-      new ApiResponsive(200, { connected: true }, "Razorpay connected")
+      new ApiResponsive(200, { connected: true }, "Razorpay connected successfully")
     );
   } catch (err) {
+    console.error("Razorpay test connection error:", err);
     res.status(200).json(
-      new ApiResponsive(200, { connected: false }, err.message || "Connection failed")
+      new ApiResponsive(200, { connected: false }, err.error?.description || err.message || "Connection failed")
     );
   }
 });

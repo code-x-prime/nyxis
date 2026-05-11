@@ -387,13 +387,22 @@ export default function SiteSettingsPage() {
   const handleSaveRazorpay = async () => {
     try {
       setIsSaving(true);
+      // Update both SiteSettings (for keys) and PaymentSettings (for enabled toggle)
       await api.put("/api/admin/site-settings", {
         razorpayKeyId: form.razorpayKeyId || null,
         razorpayKeySecret: form.razorpayKeySecret !== "••••••••" ? form.razorpayKeySecret : undefined,
-        razorpayEnabled: form.razorpayEnabled,
+        razorpayEnabled: razorpayEnabled,
       });
-      toast.success("Razorpay settings saved");
+
+      await api.patch("/api/admin/payment-settings", {
+        razorpayEnabled,
+        cashEnabled,
+        codCharge: parseFloat(String(codCharge)) || 0,
+      });
+
+      toast.success("Razorpay settings and payment status saved");
       fetchSettings();
+      fetchPaymentSettings();
     } catch (err: unknown) {
       const msg = err && typeof err === "object" && "response" in err ? (err as { response?: { data?: { message?: string } } }).response?.data?.message : undefined;
       toast.error(msg || "Failed to save");
@@ -405,9 +414,16 @@ export default function SiteSettingsPage() {
   const handleTestRazorpay = async () => {
     try {
       setIsTestingRazorpay(true);
-      const response = await api.post("/api/admin/site-settings/test-razorpay");
+      const response = await api.post("/api/admin/site-settings/test-razorpay", {
+        keyId: form.razorpayKeyId,
+        keySecret: form.razorpayKeySecret,
+      });
       const connected = response.data?.data?.connected;
-      toast.success(connected ? "Razorpay connected" : (response.data?.message || "Not connected"));
+      if (connected) {
+        toast.success("Razorpay connected successfully");
+      } else {
+        toast.error(response.data?.message || "Not connected");
+      }
     } catch {
       toast.error("Test failed");
     } finally {
@@ -496,14 +512,21 @@ export default function SiteSettingsPage() {
     }
     try {
       setIsSaving(true);
+      // 1. Update PaymentSettings (COD, Razorpay toggle, COD charge)
       await api.patch("/api/admin/payment-settings", {
         cashEnabled,
         razorpayEnabled,
         codCharge: parseFloat(String(codCharge)) || 0,
       });
-      // Keep SiteSettings.razorpayEnabled in sync for key checks
-      await api.put("/api/admin/site-settings", { razorpayEnabled });
-      toast.success("Payment methods saved");
+      
+      // 2. Sync SiteSettings (razorpayEnabled and keys if changed)
+      await api.put("/api/admin/site-settings", { 
+        razorpayEnabled,
+        razorpayKeyId: form.razorpayKeyId || null,
+        razorpayKeySecret: form.razorpayKeySecret !== "••••••••" ? form.razorpayKeySecret : undefined,
+      });
+
+      toast.success("Payment methods and credentials saved");
       fetchPaymentSettings();
       fetchSettings();
     } catch (err: unknown) {
@@ -861,18 +884,17 @@ export default function SiteSettingsPage() {
                   </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-3">
                 <Button variant="outline" onClick={handleTestRazorpay} disabled={isTestingRazorpay}>
                   {isTestingRazorpay ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Test Connection
+                  Test Keys
                 </Button>
-                <Button onClick={handleSaveRazorpay} disabled={isSaving}>
+                <Button onClick={handleSaveRazorpay} disabled={isSaving} className="bg-[var(--accent)] hover:bg-[var(--accent)]/90">
                   {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Save Razorpay
+                  Save Razorpay & Enable Status
                 </Button>
-                <Button onClick={handleSavePaymentMethods} disabled={isSaving}>
-                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Save Payment Methods
+                <Button variant="ghost" onClick={handleSavePaymentMethods} disabled={isSaving}>
+                  Save All Payment Methods
                 </Button>
               </div>
             </CardContent>
