@@ -132,9 +132,9 @@ function ProductsContent() {
       filters.color === newFiltersFromURL.color &&
       filters.size === newFiltersFromURL.size &&
       String(filters.minPrice || "") ===
-        String(newFiltersFromURL.minPrice || "") &&
+      String(newFiltersFromURL.minPrice || "") &&
       String(filters.maxPrice || "") ===
-        String(newFiltersFromURL.maxPrice || "") &&
+      String(newFiltersFromURL.maxPrice || "") &&
       filters.sort === newFiltersFromURL.sort &&
       filters.order === newFiltersFromURL.order;
 
@@ -204,8 +204,7 @@ function ProductsContent() {
           );
 
           response = await fetchApi(
-            `/public/products/type/${
-              filters.productType
+            `/public/products/type/${filters.productType
             }?${queryParams.toString()}`
           );
 
@@ -584,7 +583,7 @@ function ProductsContent() {
   if (loading && products.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-12 h-12 border-4 border-nyxis-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-trayalife-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -633,11 +632,10 @@ function ProductsContent() {
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           {/* Filters Sidebar */}
           <div
-            className={`md:w-1/4 lg:w-1/5 ${
-              mobileFiltersOpen
+            className={`md:w-1/4 lg:w-1/5 ${mobileFiltersOpen
                 ? "block fixed inset-0 z-50 bg-white p-4 overflow-auto"
                 : "hidden"
-            } md:block md:static md:z-auto md:bg-transparent md:p-0`}
+              } md:block md:static md:z-auto md:bg-transparent md:p-0`}
           >
             <div className="bg-white rounded-lg shadow-sm border sticky top-28">
               <div className="flex items-center justify-between p-4 border-b">
@@ -645,7 +643,7 @@ function ProductsContent() {
                 <div className="flex gap-2">
                   <button
                     onClick={clearFilters}
-                    className="text-sm text-nyxis-500 hover:underline flex items-center"
+                    className="text-sm text-trayalife-500 hover:underline flex items-center"
                   >
                     Clear all
                   </button>
@@ -672,11 +670,10 @@ function ProductsContent() {
                   )}
                 </div>
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    activeFilterSection === "search"
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${activeFilterSection === "search"
                       ? "max-h-[500px] opacity-100"
                       : "max-h-0 opacity-0"
-                  }`}
+                    }`}
                 >
                   <form
                     onSubmit={(e) => {
@@ -716,21 +713,19 @@ function ProductsContent() {
                   )}
                 </div>
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    activeFilterSection === "categories"
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${activeFilterSection === "categories"
                       ? "max-h-[500px] opacity-100"
                       : "max-h-0 opacity-0"
-                  }`}
+                    }`}
                 >
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {categories.map((category) => (
                       <div key={category.id} className="ml-2">
                         <div
-                          className={`cursor-pointer hover:text-nyxis-500 flex items-center ${
-                            filters.category === category.slug
-                              ? "font-medium text-nyxis-500"
+                          className={`cursor-pointer hover:text-trayalife-500 flex items-center ${filters.category === category.slug
+                              ? "font-medium text-trayalife-500"
                               : ""
-                          }`}
+                            }`}
                           onClick={() =>
                             handleFilterChange("category", category.slug)
                           }
@@ -743,11 +738,10 @@ function ProductsContent() {
                             {category.children.map((child) => (
                               <div
                                 key={child.id}
-                                className={`cursor-pointer hover:text-nyxis-500 text-sm ${
-                                  filters.category === child.slug
-                                    ? "font-medium text-nyxis-500"
+                                className={`cursor-pointer hover:text-trayalife-500 text-sm ${filters.category === child.slug
+                                    ? "font-medium text-trayalife-500"
                                     : ""
-                                }`}
+                                  }`}
                                 onClick={() =>
                                   handleFilterChange("category", child.slug)
                                 }
@@ -793,26 +787,24 @@ function ProductsContent() {
                         )}
                       </div>
                       <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                          isOpen
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen
                             ? "max-h-[500px] opacity-100"
                             : "max-h-0 opacity-0"
-                        }`}
+                          }`}
                       >
                         <div className="space-y-2 max-h-60 overflow-y-auto">
                           {attribute.values.map((value) => (
                             <div
                               key={value.id}
-                              className={`cursor-pointer hover:text-nyxis-500 ml-2 flex items-center ${
-                                displaySelectedValues.includes(value.id)
-                                  ? "font-medium text-nyxis-500"
+                              className={`cursor-pointer hover:text-trayalife-500 ml-2 flex items-center ${displaySelectedValues.includes(value.id)
+                                  ? "font-medium text-trayalife-500"
                                   : ""
-                              }`}
+                                }`}
                               onClick={() => handleColorChange(value.id)}
                             >
                               <div className="w-4 h-4 border border-gray-300 rounded mr-2 flex items-center justify-center">
                                 {displaySelectedValues.includes(value.id) && (
-                                  <div className="w-2 h-2 rounded-sm bg-nyxis-500"></div>
+                                  <div className="w-2 h-2 rounded-sm bg-trayalife-500"></div>
                                 )}
                               </div>
                               {value.hexCode && (
@@ -861,26 +853,24 @@ function ProductsContent() {
                         )}
                       </div>
                       <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                          isOpen
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen
                             ? "max-h-[500px] opacity-100"
                             : "max-h-0 opacity-0"
-                        }`}
+                          }`}
                       >
                         <div className="space-y-2 max-h-60 overflow-y-auto">
                           {attribute.values.map((value) => (
                             <div
                               key={value.id}
-                              className={`cursor-pointer hover:text-nyxis-500 ml-2 flex items-center ${
-                                displaySelectedValues.includes(value.id)
-                                  ? "font-medium text-nyxis-500"
+                              className={`cursor-pointer hover:text-trayalife-500 ml-2 flex items-center ${displaySelectedValues.includes(value.id)
+                                  ? "font-medium text-trayalife-500"
                                   : ""
-                              }`}
+                                }`}
                               onClick={() => handleSizeChange(value.id)}
                             >
                               <div className="w-4 h-4 border border-gray-300 rounded mr-2 flex items-center justify-center">
                                 {displaySelectedValues.includes(value.id) && (
-                                  <div className="w-2 h-2 rounded-sm bg-nyxis-500"></div>
+                                  <div className="w-2 h-2 rounded-sm bg-trayalife-500"></div>
                                 )}
                               </div>
                               {value.display || value.name}
@@ -912,21 +902,19 @@ function ProductsContent() {
                       )}
                     </div>
                     <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        isOpen
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen
                           ? "max-h-[500px] opacity-100"
                           : "max-h-0 opacity-0"
-                      }`}
+                        }`}
                     >
                       <div className="space-y-2 max-h-60 overflow-y-auto">
                         {attribute.values.map((value) => (
                           <div
                             key={value.id}
-                            className={`cursor-pointer hover:text-nyxis-500 ml-2 flex items-center ${
-                              selectedValues.includes(value.id)
-                                ? "font-medium text-nyxis-500"
+                            className={`cursor-pointer hover:text-trayalife-500 ml-2 flex items-center ${selectedValues.includes(value.id)
+                                ? "font-medium text-trayalife-500"
                                 : ""
-                            }`}
+                              }`}
                             onClick={() =>
                               handleAttributeValueChange(
                                 attribute.name,
@@ -936,7 +924,7 @@ function ProductsContent() {
                           >
                             <div className="w-4 h-4 border border-gray-300 rounded mr-2 flex items-center justify-center">
                               {selectedValues.includes(value.id) && (
-                                <div className="w-2 h-2 rounded-sm bg-nyxis-500"></div>
+                                <div className="w-2 h-2 rounded-sm bg-trayalife-500"></div>
                               )}
                             </div>
                             {value.hexCode && (
@@ -987,7 +975,7 @@ function ProductsContent() {
 
               {loading && (
                 <div className="text-sm text-gray-500 flex items-center">
-                  <div className="w-4 h-4 border-2 border-nyxis-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+                  <div className="w-4 h-4 border-2 border-trayalife-500 border-t-transparent rounded-full animate-spin mr-2"></div>
                   Updating...
                 </div>
               )}
@@ -1004,12 +992,12 @@ function ProductsContent() {
                     filters.sort === "createdAt" && filters.order === "desc"
                       ? "newest"
                       : filters.sort === "createdAt" && filters.order === "asc"
-                      ? "oldest"
-                      : filters.sort === "name" && filters.order === "asc"
-                      ? "name-asc"
-                      : filters.sort === "name" && filters.order === "desc"
-                      ? "name-desc"
-                      : "newest"
+                        ? "oldest"
+                        : filters.sort === "name" && filters.order === "asc"
+                          ? "name-asc"
+                          : filters.sort === "name" && filters.order === "desc"
+                            ? "name-desc"
+                            : "newest"
                   }
                 >
                   <option value="newest">Featured</option>
@@ -1029,102 +1017,102 @@ function ProductsContent() {
               selectedSizes.length > 0 ||
               filters.minPrice ||
               filters.maxPrice) && (
-              <div className="flex flex-wrap items-center gap-2 mb-6 p-3 bg-gray-50 rounded-md border">
-                <span className="text-sm font-medium">Active Filters:</span>
+                <div className="flex flex-wrap items-center gap-2 mb-6 p-3 bg-gray-50 rounded-md border">
+                  <span className="text-sm font-medium">Active Filters:</span>
 
-                {filters.search && (
-                  <div className="bg-nyxis-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
-                    <span>Search: {filters.search}</span>
-                    <button
-                      onClick={() => handleFilterChange("search", "")}
-                      className="ml-1"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
+                  {filters.search && (
+                    <div className="bg-trayalife-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
+                      <span>Search: {filters.search}</span>
+                      <button
+                        onClick={() => handleFilterChange("search", "")}
+                        className="ml-1"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
 
-                {filters.category && (
-                  <div className="bg-nyxis-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
-                    <span>
-                      Category:{" "}
-                      {categories.find((c) => c.slug === filters.category)
-                        ?.name || filters.category}
-                    </span>
-                    <button
-                      onClick={() => handleFilterChange("category", "")}
-                      className="ml-1"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
+                  {filters.category && (
+                    <div className="bg-trayalife-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
+                      <span>
+                        Category:{" "}
+                        {categories.find((c) => c.slug === filters.category)
+                          ?.name || filters.category}
+                      </span>
+                      <button
+                        onClick={() => handleFilterChange("category", "")}
+                        className="ml-1"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
 
-                {selectedColors.length > 0 && (
-                  <div className="bg-nyxis-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
-                    <span>
-                      Color:{" "}
-                      {colors.find((c) => c.id === selectedColors[0])?.name ||
-                        selectedColors[0]}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setSelectedColors([]);
-                        handleFilterChange("color", "");
-                      }}
-                      className="ml-1"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
+                  {selectedColors.length > 0 && (
+                    <div className="bg-trayalife-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
+                      <span>
+                        Color:{" "}
+                        {colors.find((c) => c.id === selectedColors[0])?.name ||
+                          selectedColors[0]}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSelectedColors([]);
+                          handleFilterChange("color", "");
+                        }}
+                        className="ml-1"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
 
-                {selectedSizes.length > 0 && (
-                  <div className="bg-nyxis-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
-                    <span>
-                      Size:{" "}
-                      {sizes.find((s) => s.id === selectedSizes[0])?.display ||
-                        sizes.find((s) => s.id === selectedSizes[0])?.name ||
-                        selectedSizes[0]}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setSelectedSizes([]);
-                        handleFilterChange("size", "");
-                      }}
-                      className="ml-1"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
+                  {selectedSizes.length > 0 && (
+                    <div className="bg-trayalife-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
+                      <span>
+                        Size:{" "}
+                        {sizes.find((s) => s.id === selectedSizes[0])?.display ||
+                          sizes.find((s) => s.id === selectedSizes[0])?.name ||
+                          selectedSizes[0]}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSelectedSizes([]);
+                          handleFilterChange("size", "");
+                        }}
+                        className="ml-1"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
 
-                {(filters.minPrice || filters.maxPrice) && (
-                  <div className="bg-nyxis-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
-                    <span>
-                      Price: {filters.minPrice || "0"} -{" "}
-                      {filters.maxPrice || "∞"}
-                    </span>
-                    <button
-                      onClick={() => {
-                        handleFilterChange("minPrice", "");
-                        handleFilterChange("maxPrice", "");
-                      }}
-                      className="ml-1"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
+                  {(filters.minPrice || filters.maxPrice) && (
+                    <div className="bg-trayalife-500 text-white text-xs px-2 py-1 rounded-md flex items-center">
+                      <span>
+                        Price: {filters.minPrice || "0"} -{" "}
+                        {filters.maxPrice || "∞"}
+                      </span>
+                      <button
+                        onClick={() => {
+                          handleFilterChange("minPrice", "");
+                          handleFilterChange("maxPrice", "");
+                        }}
+                        className="ml-1"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
 
-                <button
-                  onClick={clearFilters}
-                  className="text-xs text-nyxis-500 underline ml-2"
-                >
-                  Clear All
-                </button>
-              </div>
-            )}
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs text-trayalife-500 underline ml-2"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              )}
 
             {/* Products Grid */}
             {loading && products.length === 0 ? (
@@ -1171,7 +1159,7 @@ function ProductsContent() {
                 <div className="flex flex-wrap justify-center gap-2">
                   <Button
                     onClick={clearFilters}
-                    className="bg-nyxis-500 hover:bg-nyxis-600 text-white"
+                    className="bg-trayalife-500 hover:bg-trayalife-600 text-white"
                   >
                     Clear All Filters
                   </Button>
@@ -1217,11 +1205,11 @@ function ProductsContent() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4">
                 {loading
                   ? [...Array(pagination.limit || 12)].map((_, index) => (
-                      <ProductCardSkeleton key={index} />
-                    ))
+                    <ProductCardSkeleton key={index} />
+                  ))
                   : products.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
+                    <ProductCard key={product.id} product={product} />
+                  ))}
               </div>
             )}
 
@@ -1252,11 +1240,10 @@ function ProductsContent() {
                           key={page}
                           onClick={() => handlePageChange(page)}
                           disabled={loading}
-                          className={`px-3 py-2 text-sm ${
-                            pagination.page === page
-                              ? "bg-nyxis-500 text-white"
+                          className={`px-3 py-2 text-sm ${pagination.page === page
+                              ? "bg-trayalife-500 text-white"
                               : "hover:bg-gray-100"
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>
@@ -1303,14 +1290,14 @@ export default function ProductsPage() {
       <ClientOnly
         fallback={
           <div className="flex justify-center items-center h-64">
-            <div className="w-12 h-12 border-4 border-nyxis-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-trayalife-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         }
       >
         <Suspense
           fallback={
             <div className="flex justify-center items-center h-64">
-              <div className="w-12 h-12 border-4 border-nyxis-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-12 h-12 border-4 border-trayalife-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           }
         >

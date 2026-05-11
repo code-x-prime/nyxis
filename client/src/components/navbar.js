@@ -196,10 +196,10 @@ export function Navbar() {
         <Toaster position="top-center" richColors />
 
         {/* ── Top Promo Bar ── */}
-        <div className="bg-nyxis-dark py-2">
+        <div className="bg-trayalife-dark py-2">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-center text-center">
-              <p className="text-nyxis-gold text-[0.7rem] md:text-xs font-medium tracking-wide font-jost">
+              <p className="text-trayalife-gold text-[0.7rem] md:text-xs font-medium tracking-wide font-jost">
                 ✦ Free delivery above ₹999 | Authentic products guaranteed ✦
               </p>
             </div>
@@ -209,7 +209,7 @@ export function Navbar() {
         {/* ── Main Nav Bar ── */}
         <div
           className={cn(
-            "transition-all duration-300 bg-white border-b border-nyxis-gray-200",
+            "transition-all duration-300 bg-white border-b border-trayalife-gray-200",
             isScrolled && "shadow-nav"
           )}
         >
@@ -219,14 +219,14 @@ export function Navbar() {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setIsMenuOpen(true)}
-                  className="p-2 text-nyxis-dark hover:text-nyxis-500 transition-colors"
+                  className="p-2 text-trayalife-dark hover:text-trayalife-500 transition-colors"
                   aria-label="Open menu"
                 >
                   <FiMenu className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="p-2 text-nyxis-dark hover:text-nyxis-500 transition-colors"
+                  className="p-2 text-trayalife-dark hover:text-trayalife-500 transition-colors"
                   aria-label="Search"
                 >
                   <FiSearch className="h-5 w-5" />
@@ -247,17 +247,17 @@ export function Navbar() {
                 <ClientOnly>
                   <Link
                     href="/wishlist"
-                    className="p-2 text-nyxis-gray-400 hover:text-nyxis-500 transition-colors"
+                    className="p-2 text-trayalife-gray-400 hover:text-trayalife-500 transition-colors"
                   >
                     <FiHeart className="h-5 w-5" />
                   </Link>
                   <Link
                     href="/cart"
-                    className="p-2 text-nyxis-dark hover:text-nyxis-500 transition-colors relative"
+                    className="p-2 text-trayalife-dark hover:text-trayalife-500 transition-colors relative"
                   >
                     <HiOutlineShoppingBag className="h-5 w-5" />
                     {getCartItemCount() > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 bg-nyxis-gold text-nyxis-dark text-[0.6rem] font-bold w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full flex items-center justify-center">
+                      <span className="absolute -top-0.5 -right-0.5 bg-trayalife-gold text-trayalife-dark text-[0.6rem] font-bold w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full flex items-center justify-center">
                         {getCartItemCount()}
                       </span>
                     )}
@@ -282,11 +282,11 @@ export function Navbar() {
               {/* Search Bar */}
               <div className="flex-1 max-w-xl">
                 <form onSubmit={handleSearch} className="relative">
-                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-nyxis-500" />
+                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-trayalife-500" />
                   <input
                     type="search"
                     placeholder="Search products, brands..."
-                    className="w-full pl-11 pr-4 py-2.5 rounded-full border border-nyxis-gray-200 bg-nyxis-off-white text-sm text-nyxis-dark placeholder:text-nyxis-gray-400 focus:bg-white focus:border-nyxis-500 focus:ring-1 focus:ring-nyxis-500 focus:outline-none transition-all duration-200"
+                    className="w-full pl-11 pr-4 py-2.5 rounded-full border border-trayalife-gray-200 bg-trayalife-off-white text-sm text-trayalife-dark placeholder:text-trayalife-gray-400 focus:bg-white focus:border-trayalife-500 focus:ring-1 focus:ring-trayalife-500 focus:outline-none transition-all duration-200"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -299,7 +299,7 @@ export function Navbar() {
                 <ClientOnly>
                   <div className="relative">
                     <button
-                      className="flex flex-col items-center text-nyxis-gray-400 hover:text-nyxis-500 transition-colors"
+                      className="flex flex-col items-center text-trayalife-gray-400 hover:text-trayalife-500 transition-colors"
                       onClick={() =>
                         setActiveMenu(
                           activeMenu === "account" ? null : "account"
@@ -313,7 +313,7 @@ export function Navbar() {
                     {/* Account Dropdown */}
                     <div
                       className={cn(
-                        "absolute right-0 top-full mt-3 w-56 bg-white rounded-xl shadow-dropdown border border-nyxis-gray-200 py-2 transition-all duration-200 origin-top-right z-50",
+                        "absolute right-0 top-full mt-3 w-56 bg-white rounded-xl shadow-dropdown border border-trayalife-gray-200 py-2 transition-all duration-200 origin-top-right z-50",
                         activeMenu === "account"
                           ? "opacity-100 scale-100 visible"
                           : "opacity-0 scale-95 invisible pointer-events-none"
@@ -321,36 +321,36 @@ export function Navbar() {
                     >
                       {isAuthenticated ? (
                         <>
-                          <div className="px-4 py-3 border-b border-nyxis-gray-200">
-                            <p className="font-jost font-bold text-nyxis-dark text-sm">
+                          <div className="px-4 py-3 border-b border-trayalife-gray-200">
+                            <p className="font-jost font-bold text-trayalife-dark text-sm">
                               {user?.name || "User"}
                             </p>
-                            <p className="text-xs text-nyxis-gray-400 truncate">
+                            <p className="text-xs text-trayalife-gray-400 truncate">
                               {user?.email}
                             </p>
                           </div>
                           <Link
                             href="/account"
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-nyxis-50 hover:text-nyxis-500 transition-colors"
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-trayalife-50 hover:text-trayalife-500 transition-colors"
                             onClick={() => setActiveMenu(null)}
                           >
                             <FiUser className="h-4 w-4" /> My Account
                           </Link>
                           <Link
                             href="/account/orders"
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-nyxis-50 hover:text-nyxis-500 transition-colors"
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-trayalife-50 hover:text-trayalife-500 transition-colors"
                             onClick={() => setActiveMenu(null)}
                           >
                             <FiPackage className="h-4 w-4" /> My Orders
                           </Link>
                           <Link
                             href="/wishlist"
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-nyxis-50 hover:text-nyxis-500 transition-colors"
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-trayalife-50 hover:text-trayalife-500 transition-colors"
                             onClick={() => setActiveMenu(null)}
                           >
                             <FiHeart className="h-4 w-4" /> My Wishlist
                           </Link>
-                          <div className="border-t border-nyxis-gray-200 mt-1 pt-1">
+                          <div className="border-t border-trayalife-gray-200 mt-1 pt-1">
                             <button
                               onClick={() => {
                                 handleLogout();
@@ -368,7 +368,7 @@ export function Navbar() {
                             href="/auth"
                             onClick={() => setActiveMenu(null)}
                           >
-                            <button className="w-full bg-nyxis-500 hover:bg-nyxis-600 text-white font-jost font-semibold py-2.5 rounded-lg transition-colors text-sm">
+                            <button className="w-full bg-trayalife-500 hover:bg-trayalife-600 text-white font-jost font-semibold py-2.5 rounded-lg transition-colors text-sm">
                               Login
                             </button>
                           </Link>
@@ -376,7 +376,7 @@ export function Navbar() {
                             href="/auth?mode=register"
                             onClick={() => setActiveMenu(null)}
                           >
-                            <button className="w-full border-2 border-nyxis-500 text-nyxis-500 hover:bg-nyxis-500 hover:text-white font-jost font-semibold py-2.5 rounded-lg transition-all text-sm mt-2">
+                            <button className="w-full border-2 border-trayalife-500 text-trayalife-500 hover:bg-trayalife-500 hover:text-white font-jost font-semibold py-2.5 rounded-lg transition-all text-sm mt-2">
                               Register
                             </button>
                           </Link>
@@ -389,7 +389,7 @@ export function Navbar() {
                 {/* Wishlist */}
                 <Link
                   href="/wishlist"
-                  className="flex flex-col items-center text-nyxis-gray-400 hover:text-nyxis-500 transition-colors"
+                  className="flex flex-col items-center text-trayalife-gray-400 hover:text-trayalife-500 transition-colors"
                 >
                   <FiHeart className="h-5 w-5" />
                   <span className="text-[0.65rem] mt-0.5 font-medium">Wishlist</span>
@@ -399,12 +399,12 @@ export function Navbar() {
                 <ClientOnly>
                   <Link
                     href="/cart"
-                    className="flex items-center gap-2 bg-nyxis-500 hover:bg-nyxis-600 text-white rounded-full px-4 py-2 transition-all duration-200 shadow-[0_2px_8px_rgba(22,100,84,0.25)] hover:shadow-[0_4px_12px_rgba(22,100,84,0.35)]"
+                    className="flex items-center gap-2 bg-trayalife-500 hover:bg-trayalife-600 text-white rounded-full px-4 py-2 transition-all duration-200 shadow-[0_2px_8px_rgba(22,100,84,0.25)] hover:shadow-[0_4px_12px_rgba(22,100,84,0.35)]"
                   >
                     <HiOutlineShoppingBag className="h-4.5 w-4.5" />
                     <span className="text-sm font-semibold font-jost">Cart</span>
                     {getCartItemCount() > 0 && (
-                      <span className="bg-nyxis-gold text-nyxis-dark text-[0.6rem] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
+                      <span className="bg-trayalife-gold text-trayalife-dark text-[0.6rem] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
                         {getCartItemCount()}
                       </span>
                     )}
@@ -418,7 +418,7 @@ export function Navbar() {
         {/* ── Category Navigation ── */}
         <nav
           className={cn(
-            "hidden lg:block border-b border-nyxis-gray-200 transition-all duration-300 bg-white"
+            "hidden lg:block border-b border-trayalife-gray-200 transition-all duration-300 bg-white"
           )}
         >
           <div className="max-w-7xl mx-auto px-4">
@@ -436,8 +436,8 @@ export function Navbar() {
                       className={cn(
                         "block px-4 py-2.5 text-xs font-bold tracking-wider transition-colors",
                         item.isSale
-                          ? "text-nyxis-gold hover:text-nyxis-gold-light"
-                          : "text-nyxis-500 hover:text-nyxis-600"
+                          ? "text-trayalife-gold hover:text-trayalife-gold-light"
+                          : "text-trayalife-500 hover:text-trayalife-600"
                       )}
                     >
                       {item.isSale ? `🔥 ${item.name}` : `✦ ${item.name}`}
@@ -446,15 +446,15 @@ export function Navbar() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "block px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-nyxis-500 tracking-wide transition-colors relative",
-                        activeMenu === item.name && "text-nyxis-500"
+                        "block px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-trayalife-500 tracking-wide transition-colors relative",
+                        activeMenu === item.name && "text-trayalife-500"
                       )}
                     >
                       {item.name}
                       {/* Bottom indicator */}
                       <span
                         className={cn(
-                          "absolute bottom-0 left-4 right-4 h-[2px] bg-nyxis-500 transform origin-left transition-transform duration-200 rounded-full",
+                          "absolute bottom-0 left-4 right-4 h-[2px] bg-trayalife-500 transform origin-left transition-transform duration-200 rounded-full",
                           activeMenu === item.name
                             ? "scale-x-100"
                             : "scale-x-0"
@@ -467,14 +467,14 @@ export function Navbar() {
                   {item.megaMenu && (
                     <div
                       className={cn(
-                        "absolute left-1/2 -translate-x-1/2 top-full w-[280px] bg-white rounded-xl shadow-dropdown border border-nyxis-gray-200 transition-all duration-200 origin-top z-50",
+                        "absolute left-1/2 -translate-x-1/2 top-full w-[280px] bg-white rounded-xl shadow-dropdown border border-trayalife-gray-200 transition-all duration-200 origin-top z-50",
                         activeMenu === item.name
                           ? "opacity-100 scale-100 visible"
                           : "opacity-0 scale-95 invisible pointer-events-none"
                       )}
                     >
                       <div className="p-5">
-                        <h3 className="text-xs font-bold text-nyxis-500 tracking-widest mb-3 uppercase">
+                        <h3 className="text-xs font-bold text-trayalife-500 tracking-widest mb-3 uppercase">
                           Shop by Category
                         </h3>
                         <ul className="space-y-1">
@@ -482,7 +482,7 @@ export function Navbar() {
                             <li key={cat.href}>
                               <Link
                                 href={cat.href}
-                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-nyxis-500 hover:bg-nyxis-50 px-3 py-2 rounded-lg transition-all duration-150"
+                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-trayalife-500 hover:bg-trayalife-50 px-3 py-2 rounded-lg transition-all duration-150"
                                 onClick={() => setActiveMenu(null)}
                               >
                                 <FiChevronRight className="h-3 w-3 opacity-40" />
@@ -511,20 +511,20 @@ export function Navbar() {
             className="bg-white p-4 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <form onSubmit={handleSearch} className="flex gap-2 bg-white border border-nyxis-gray-200 rounded-2xl p-2 shadow-card focus-within:border-nyxis-500 focus-within:shadow-[0_4px_16px_rgba(22,100,84,0.1)] transition-all">
-              <FiSearch className="ml-3 self-center text-nyxis-gray-400 h-5 w-5 flex-shrink-0" />
+            <form onSubmit={handleSearch} className="flex gap-2 bg-white border border-trayalife-gray-200 rounded-2xl p-2 shadow-card focus-within:border-trayalife-500 focus-within:shadow-[0_4px_16px_rgba(22,100,84,0.1)] transition-all">
+              <FiSearch className="ml-3 self-center text-trayalife-gray-400 h-5 w-5 flex-shrink-0" />
               <input
                 ref={searchInputRef}
                 type="search"
                 placeholder="Search products, brands..."
-                className="flex-1 outline-none text-sm text-nyxis-dark bg-transparent py-2 px-1 placeholder:text-nyxis-gray-400"
+                className="flex-1 outline-none text-sm text-trayalife-dark bg-transparent py-2 px-1 placeholder:text-trayalife-gray-400"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(false)}
-                className="p-2 text-nyxis-gray-400 hover:text-nyxis-dark"
+                className="p-2 text-trayalife-gray-400 hover:text-trayalife-dark"
               >
                 <FiX className="h-5 w-5" />
               </button>
@@ -556,10 +556,10 @@ export function Navbar() {
           )}
         >
           {/* Menu Header */}
-          <div className="bg-nyxis-dark px-5 py-4 flex items-center justify-between shrink-0">
+          <div className="bg-trayalife-dark px-5 py-4 flex items-center justify-between shrink-0">
             <div>
               <Image src="/logo.png" alt="Traya Life" width={80} height={32} className="h-8 w-auto brightness-0 invert" />
-              <p className="text-nyxis-gold text-[0.6rem] tracking-widest uppercase mt-1 font-jost">Holistic Hair & Wellness Solutions</p>
+              <p className="text-trayalife-gold text-[0.6rem] tracking-widest uppercase mt-1 font-jost">Holistic Hair & Wellness Solutions</p>
             </div>
             <button
               onClick={() => setIsMenuOpen(false)}
@@ -571,18 +571,18 @@ export function Navbar() {
 
           {/* User Section */}
           <ClientOnly>
-            <div className="px-5 py-4 border-b border-nyxis-gray-200 flex items-center justify-between shrink-0 bg-nyxis-50">
+            <div className="px-5 py-4 border-b border-trayalife-gray-200 flex items-center justify-between shrink-0 bg-trayalife-50">
               {isAuthenticated ? (
                 <div>
-                  <p className="font-jost font-bold text-nyxis-dark text-sm">
+                  <p className="font-jost font-bold text-trayalife-dark text-sm">
                     Hi, {user?.name || "User"}
                   </p>
-                  <p className="text-xs text-nyxis-gray-400">{user?.email}</p>
+                  <p className="text-xs text-trayalife-gray-400">{user?.email}</p>
                 </div>
               ) : (
                 <Link
                   href="/auth"
-                  className="flex items-center gap-2 text-nyxis-500 font-jost font-semibold text-sm"
+                  className="flex items-center gap-2 text-trayalife-500 font-jost font-semibold text-sm"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <FiUser className="h-4 w-4" />
@@ -591,7 +591,7 @@ export function Navbar() {
               )}
               <Link
                 href="/wishlist"
-                className="p-2 text-nyxis-gray-400 hover:text-nyxis-500 transition-colors"
+                className="p-2 text-trayalife-gray-400 hover:text-trayalife-500 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <FiHeart className="h-5 w-5" />
@@ -602,10 +602,10 @@ export function Navbar() {
           {/* Menu Items - Scrollable */}
           <div className="flex-1 overflow-y-auto">
             {/* NEW ARRIVALS */}
-            <div className="bg-nyxis-500">
+            <div className="bg-trayalife-500">
               <Link
                 href="/products?productType=new"
-                className="flex items-center justify-between px-5 py-3.5 hover:bg-nyxis-600 transition-colors"
+                className="flex items-center justify-between px-5 py-3.5 hover:bg-trayalife-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <span className="font-jost font-bold text-white text-sm tracking-wide">✦ NEW ARRIVALS</span>
@@ -617,7 +617,7 @@ export function Navbar() {
             {menuItems
               .filter((item) => !item.highlight)
               .map((item) => (
-                <div key={item.name} className="border-b border-nyxis-gray-200">
+                <div key={item.name} className="border-b border-trayalife-gray-200">
                   {item.megaMenu ? (
                     <>
                       <button
@@ -626,12 +626,12 @@ export function Navbar() {
                             expandedMobileMenu === item.name ? null : item.name
                           )
                         }
-                        className="flex items-center justify-between w-full px-5 py-3.5 text-nyxis-dark hover:bg-nyxis-50 transition-colors"
+                        className="flex items-center justify-between w-full px-5 py-3.5 text-trayalife-dark hover:bg-trayalife-50 transition-colors"
                       >
                         <span className="font-medium text-sm">{item.name}</span>
                         <FiChevronDown
                           className={cn(
-                            "h-4 w-4 text-nyxis-gray-400 transition-transform duration-200",
+                            "h-4 w-4 text-trayalife-gray-400 transition-transform duration-200",
                             expandedMobileMenu === item.name && "rotate-180"
                           )}
                         />
@@ -640,7 +640,7 @@ export function Navbar() {
                       {/* Submenu */}
                       <div
                         className={cn(
-                          "bg-nyxis-50 overflow-hidden transition-all duration-300",
+                          "bg-trayalife-50 overflow-hidden transition-all duration-300",
                           expandedMobileMenu === item.name
                             ? "max-h-[500px] opacity-100"
                             : "max-h-0 opacity-0"
@@ -649,7 +649,7 @@ export function Navbar() {
                         <div className="py-1">
                           <Link
                             href={item.href}
-                            className="block px-7 py-2.5 text-nyxis-500 font-semibold text-sm hover:bg-nyxis-100"
+                            className="block px-7 py-2.5 text-trayalife-500 font-semibold text-sm hover:bg-trayalife-100"
                             onClick={() => setIsMenuOpen(false)}
                           >
                             Shop All {item.name}
@@ -658,7 +658,7 @@ export function Navbar() {
                             <Link
                               key={cat.href}
                               href={cat.href}
-                              className="block px-7 py-2.5 text-gray-600 text-sm hover:bg-nyxis-100 hover:text-nyxis-500"
+                              className="block px-7 py-2.5 text-gray-600 text-sm hover:bg-trayalife-100 hover:text-trayalife-500"
                               onClick={() => setIsMenuOpen(false)}
                             >
                               {cat.name}
@@ -670,33 +670,33 @@ export function Navbar() {
                   ) : (
                     <Link
                       href={item.href}
-                      className="flex items-center justify-between px-5 py-3.5 text-nyxis-dark hover:bg-nyxis-50 transition-colors"
+                      className="flex items-center justify-between px-5 py-3.5 text-trayalife-dark hover:bg-trayalife-50 transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <span className="font-medium text-sm">{item.name}</span>
-                      <FiChevronRight className="h-4 w-4 text-nyxis-gray-400" />
+                      <FiChevronRight className="h-4 w-4 text-trayalife-gray-400" />
                     </Link>
                   )}
                 </div>
               ))}
 
             {/* SALE */}
-            <div className="bg-gradient-to-r from-nyxis-gold-dark to-nyxis-gold">
+            <div className="bg-gradient-to-r from-trayalife-gold-dark to-trayalife-gold">
               <Link
                 href="/products?sale=true"
                 className="flex items-center justify-between px-5 py-3.5 hover:opacity-90 transition-opacity"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <span className="font-jost font-bold text-nyxis-dark text-sm tracking-wide">🔥 CLEARANCE SALE</span>
-                <FiChevronRight className="h-4 w-4 text-nyxis-dark/60" />
+                <span className="font-jost font-bold text-trayalife-dark text-sm tracking-wide">🔥 CLEARANCE SALE</span>
+                <FiChevronRight className="h-4 w-4 text-trayalife-dark/60" />
               </Link>
             </div>
 
             {/* Additional Links */}
-            <div className="py-3 border-t border-nyxis-gray-200 mt-1">
+            <div className="py-3 border-t border-trayalife-gray-200 mt-1">
               <Link
                 href="/account/orders"
-                className="flex items-center gap-3 px-5 py-2.5 text-gray-600 text-sm hover:text-nyxis-500 hover:bg-nyxis-50 transition-colors"
+                className="flex items-center gap-3 px-5 py-2.5 text-gray-600 text-sm hover:text-trayalife-500 hover:bg-trayalife-50 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <FiTruck className="h-4 w-4" />
@@ -704,7 +704,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/contact"
-                className="flex items-center gap-3 px-5 py-2.5 text-gray-600 text-sm hover:text-nyxis-500 hover:bg-nyxis-50 transition-colors"
+                className="flex items-center gap-3 px-5 py-2.5 text-gray-600 text-sm hover:text-trayalife-500 hover:bg-trayalife-50 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <FiPhone className="h-4 w-4" />
@@ -715,7 +715,7 @@ export function Navbar() {
             {/* Logout Button */}
             <ClientOnly>
               {isAuthenticated && (
-                <div className="px-5 py-4 border-t border-nyxis-gray-200">
+                <div className="px-5 py-4 border-t border-trayalife-gray-200">
                   <button
                     onClick={() => {
                       handleLogout();
@@ -734,13 +734,13 @@ export function Navbar() {
       </div>
 
       {/* ── Mobile Bottom Tab Bar ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-nyxis-gray-200 z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-trayalife-gray-200 z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <div className="grid grid-cols-4 gap-1 safe-area-pb">
           <Link
             href="/"
             className={cn(
               "flex flex-col items-center justify-center py-2.5 transition-colors",
-              pathname === "/" ? "text-nyxis-500" : "text-nyxis-gray-400"
+              pathname === "/" ? "text-trayalife-500" : "text-trayalife-gray-400"
             )}
           >
             <FiHome className="h-5 w-5" />
@@ -752,8 +752,8 @@ export function Navbar() {
             className={cn(
               "flex flex-col items-center justify-center py-2.5 transition-colors",
               pathname.includes("/products")
-                ? "text-nyxis-500"
-                : "text-nyxis-gray-400"
+                ? "text-trayalife-500"
+                : "text-trayalife-gray-400"
             )}
           >
             <FiGrid className="h-5 w-5" />
@@ -764,7 +764,7 @@ export function Navbar() {
             href="/wishlist"
             className={cn(
               "flex flex-col items-center justify-center py-2.5 transition-colors",
-              pathname === "/wishlist" ? "text-nyxis-500" : "text-nyxis-gray-400"
+              pathname === "/wishlist" ? "text-trayalife-500" : "text-trayalife-gray-400"
             )}
           >
             <FiHeart className="h-5 w-5" />
@@ -776,13 +776,13 @@ export function Navbar() {
               href="/cart"
               className={cn(
                 "flex flex-col items-center justify-center py-2.5 relative transition-colors",
-                pathname === "/cart" ? "text-nyxis-500" : "text-nyxis-gray-400"
+                pathname === "/cart" ? "text-trayalife-500" : "text-trayalife-gray-400"
               )}
             >
               <div className="relative">
                 <HiOutlineShoppingBag className="h-5 w-5" />
                 {getCartItemCount() > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-nyxis-gold text-nyxis-dark text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 bg-trayalife-gold text-trayalife-dark text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {getCartItemCount()}
                   </span>
                 )}

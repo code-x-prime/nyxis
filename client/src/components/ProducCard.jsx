@@ -358,7 +358,7 @@ const ProductCard = ({ product }) => {
   return (
     <div
       key={product.id}
-      className="relative bg-white rounded-xl overflow-hidden border border-[#dde5e2] shadow-[0_1px_4px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(22,100,84,0.12)] hover:border-nyxis-500 hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer w-full"
+      className="relative bg-white rounded-xl overflow-hidden border border-[#dde5e2] shadow-[0_1px_4px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(22,100,84,0.12)] hover:border-trayalife-500 hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer w-full"
     >
       {/* Sale ribbon — top left */}
       {hasSale && originalPrice && currentPrice < originalPrice && (
@@ -415,7 +415,7 @@ const ProductCard = ({ product }) => {
                     setCurrentImageIndex(idx);
                   }}
                   className={`rounded-full transition-all duration-200 ${idx === currentImageIndex
-                    ? "bg-nyxis-500 w-4 h-1.5"
+                    ? "bg-trayalife-500 w-4 h-1.5"
                     : "bg-white/60 w-1.5 h-1.5 hover:bg-white/90"
                     }`}
                   aria-label={`Go to image ${idx + 1}`}
@@ -428,7 +428,7 @@ const ProductCard = ({ product }) => {
 
       {/* Wishlist button — absolute, overlaps image/badge */}
       <button
-        className={`absolute z-10 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-sm border border-[#dde5e2] hover:border-nyxis-500 transition-all duration-200 ${discountPercent > 0 ? "top-10 right-2" : "top-2 right-2"
+        className={`absolute z-10 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-sm border border-[#dde5e2] hover:border-trayalife-500 transition-all duration-200 ${discountPercent > 0 ? "top-10 right-2" : "top-2 right-2"
           }`}
         onClick={(e) => {
           e.stopPropagation();

@@ -26,7 +26,7 @@ export default function TestimonialsSection() {
       name: "Aarohi Singh",
       location: "Noida, Delhi NCR",
       quote:
-        "NYXIS has become my one-stop shop — from skincare to haircare to wellness, I find everything here!",
+        "Traya Life has become my one-stop shop — from skincare to haircare to wellness, I find everything here!",
       rating: 5,
       verified: true,
       daysAgo: 8,

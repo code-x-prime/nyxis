@@ -32,7 +32,7 @@ const BenefitsSec = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="font-jost text-2xl md:text-3xl font-bold text-white">
-            Why Choose NYXIS
+            Why Choose Traya Life
           </h2>
           <p className="text-white/50 text-sm mt-2">
             We&apos;re committed to providing you with the best beauty experience

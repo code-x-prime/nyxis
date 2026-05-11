@@ -25,7 +25,7 @@ import { DynamicIcon } from "@/components/dynamic-icon";
 import ShoppableVideoCarousel from "@/components/ShoppableVideoCarousel";
 
 /* ─────────────────────────────────────────────
-   NYXIS Section Heading — reusable across all sections
+   trayalife Section Heading — reusable across all sections
 ───────────────────────────────────────────── */
 const SectionHeading = ({
   title,
@@ -38,34 +38,34 @@ const SectionHeading = ({
     {Icon && (
       <span
         className={`inline-flex items-center gap-1.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] mb-2
-        ${dark ? "text-nyxis-gold" : "text-nyxis-500"}`}
+        ${dark ? "text-trayalife-gold" : "text-trayalife-500"}`}
       >
         <Icon className="h-3 w-3" />
         {title}
         <span
           className={`inline-block w-7 h-[2px] rounded-full ml-1
-          ${dark ? "bg-nyxis-gold" : "bg-gradient-to-r from-nyxis-500 to-nyxis-gold"}`}
+          ${dark ? "bg-trayalife-gold" : "bg-gradient-to-r from-trayalife-500 to-trayalife-gold"}`}
         />
       </span>
     )}
     <h2
       className={`font-jost font-bold tracking-tight leading-tight
         text-2xl md:text-3xl
-        ${dark ? "text-white" : "text-nyxis-dark"}`}
+        ${dark ? "text-white" : "text-trayalife-dark"}`}
     >
       {title}
     </h2>
     {subtitle && (
       <p
         className={`mt-1.5 text-sm max-w-xl ${align === "center" ? "mx-auto" : ""}
-        ${dark ? "text-white/60" : "text-nyxis-gray-400"}`}
+        ${dark ? "text-white/60" : "text-trayalife-gray-400"}`}
       >
         {subtitle}
       </p>
     )}
     <div
       className={`mt-3 h-[3px] w-10 rounded-full ${align === "center" ? "mx-auto" : ""}
-      bg-gradient-to-r from-nyxis-500 to-nyxis-gold`}
+      bg-gradient-to-r from-trayalife-500 to-trayalife-gold`}
     />
   </div>
 );
@@ -154,9 +154,9 @@ const HeroCarousel = () => {
   if (isLoading) {
     return (
       <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-        <div className="aspect-[4/5] md:aspect-[21/9] w-full bg-gradient-to-br from-nyxis-dark via-nyxis-700 to-nyxis-500 flex items-center justify-center">
+        <div className="aspect-[4/5] md:aspect-[21/9] w-full bg-gradient-to-br from-trayalife-dark via-trayalife-700 to-trayalife-500 flex items-center justify-center">
           <div className="text-center space-y-4">
-            <div className="w-14 h-14 border-[3px] border-nyxis-gold border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-14 h-14 border-[3px] border-trayalife-gold border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-white/70 text-sm font-medium tracking-wide font-jost">Loading…</p>
           </div>
         </div>
@@ -219,7 +219,7 @@ const HeroCarousel = () => {
                 key={i}
                 onClick={() => api?.scrollTo(i)}
                 className={`rounded-full transition-all duration-300 ${i === currentSlide
-                  ? "bg-nyxis-gold w-5 h-2"
+                  ? "bg-trayalife-gold w-5 h-2"
                   : "bg-white/40 hover:bg-white/60 w-2 h-2"
                   }`}
                 aria-label={`Slide ${i + 1}`}
@@ -255,14 +255,14 @@ const HeroCarousel = () => {
    Announcement Banner
 ───────────────────────────────────────────── */
 const AnnouncementBanner = () => (
-  <div className="bg-nyxis-dark py-2.5 overflow-hidden">
+  <div className="bg-trayalife-dark py-2.5 overflow-hidden">
     <div className="max-w-7xl mx-auto px-4">
       <div className="flex items-center justify-center gap-3 text-center">
-        <span className="text-nyxis-gold text-sm">✦</span>
+        <span className="text-trayalife-gold text-sm">✦</span>
         <p className="text-white text-xs md:text-sm font-medium tracking-wide font-jost">
           Spend ₹999 or more and unlock a scratch card — win exciting goodies!
         </p>
-        <span className="text-nyxis-gold text-sm">✦</span>
+        <span className="text-trayalife-gold text-sm">✦</span>
       </div>
     </div>
   </div>
@@ -290,11 +290,11 @@ const FlashSaleCountdown = ({ endTime }) => {
 
   const Unit = ({ val, label }) => (
     <div className="flex flex-col items-center">
-      <div className="bg-nyxis-dark border border-nyxis-gold/30 rounded-lg px-4 py-2.5 min-w-[64px] text-center shadow-gold">
+      <div className="bg-trayalife-dark border border-trayalife-gold/30 rounded-lg px-4 py-2.5 min-w-[64px] text-center shadow-gold">
         <div className="text-2xl font-bold text-white font-jost tabular-nums">
           {String(val).padStart(2, "0")}
         </div>
-        <div className="text-[0.6rem] text-nyxis-gold uppercase tracking-widest mt-0.5">{label}</div>
+        <div className="text-[0.6rem] text-trayalife-gold uppercase tracking-widest mt-0.5">{label}</div>
       </div>
     </div>
   );
@@ -302,9 +302,9 @@ const FlashSaleCountdown = ({ endTime }) => {
   return (
     <div className="flex justify-center items-center gap-2 md:gap-3 mb-6">
       <Unit val={time.hours} label="Hrs" />
-      <span className="text-nyxis-gold font-bold text-xl pb-4">:</span>
+      <span className="text-trayalife-gold font-bold text-xl pb-4">:</span>
       <Unit val={time.minutes} label="Min" />
-      <span className="text-nyxis-gold font-bold text-xl pb-4">:</span>
+      <span className="text-trayalife-gold font-bold text-xl pb-4">:</span>
       <Unit val={time.seconds} label="Sec" />
     </div>
   );
@@ -314,12 +314,12 @@ const FlashSaleCountdown = ({ endTime }) => {
    Featured Products Carousel
 ───────────────────────────────────────────── */
 const ProductSkeleton = () => (
-  <div className="bg-white rounded-xl overflow-hidden border border-nyxis-gray-200 animate-pulse">
-    <div className="aspect-square bg-nyxis-gray-100" />
+  <div className="bg-white rounded-xl overflow-hidden border border-trayalife-gray-200 animate-pulse">
+    <div className="aspect-square bg-trayalife-gray-100" />
     <div className="p-3 space-y-2">
-      <div className="h-3.5 bg-nyxis-gray-100 rounded w-3/4" />
-      <div className="h-3.5 bg-nyxis-gray-100 rounded w-1/2" />
-      <div className="h-8 bg-nyxis-gray-100 rounded mt-3" />
+      <div className="h-3.5 bg-trayalife-gray-100 rounded w-3/4" />
+      <div className="h-3.5 bg-trayalife-gray-100 rounded w-1/2" />
+      <div className="h-8 bg-trayalife-gray-100 rounded mt-3" />
     </div>
   </div>
 );
@@ -343,7 +343,7 @@ const FeaturedProducts = ({ products = [], isLoading = false, error = null }) =>
   }
 
   if (error) return <p className="text-center py-8 text-red-500 text-sm">Failed to load products.</p>;
-  if (products.length === 0) return <p className="text-center py-8 text-nyxis-gray-400 text-sm">No products found.</p>;
+  if (products.length === 0) return <p className="text-center py-8 text-trayalife-gray-400 text-sm">No products found.</p>;
 
   return (
     <>
@@ -359,8 +359,8 @@ const FeaturedProducts = ({ products = [], isLoading = false, error = null }) =>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="absolute left-1 top-1/2 -translate-y-1/2 h-9 w-9 bg-white hover:bg-nyxis-50 border-nyxis-gray-200 text-nyxis-500 shadow-card rounded-full" />
-          <CarouselNext className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 bg-white hover:bg-nyxis-50 border-nyxis-gray-200 text-nyxis-500 shadow-card rounded-full" />
+          <CarouselPrevious className="absolute left-1 top-1/2 -translate-y-1/2 h-9 w-9 bg-white hover:bg-trayalife-50 border-trayalife-gray-200 text-trayalife-500 shadow-card rounded-full" />
+          <CarouselNext className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 bg-white hover:bg-trayalife-50 border-trayalife-gray-200 text-trayalife-500 shadow-card rounded-full" />
         </Carousel>
       </div>
 
@@ -368,7 +368,7 @@ const FeaturedProducts = ({ products = [], isLoading = false, error = null }) =>
         <Link href="/products">
           <Button
             variant="outline"
-            className="font-jost font-semibold text-sm border-nyxis-500 text-nyxis-500 hover:bg-nyxis-500 hover:text-white rounded-full px-7 py-2.5 transition-all duration-200 group"
+            className="font-jost font-semibold text-sm border-trayalife-500 text-trayalife-500 hover:bg-trayalife-500 hover:text-white rounded-full px-7 py-2.5 transition-all duration-200 group"
           >
             View All Products
             <FiArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
@@ -455,8 +455,8 @@ const ProductSection = ({
 }) => {
   const bg = {
     light: "bg-white",
-    tint: "bg-nyxis-50",
-    dark: "bg-nyxis-dark",
+    tint: "bg-trayalife-50",
+    dark: "bg-trayalife-dark",
   }[variant];
 
   return (
@@ -559,24 +559,24 @@ export default function Home() {
 
       {/* ── FLASH SALES ── */}
       {flashSales.length > 0 && (
-        <section className="py-10 md:py-14 bg-nyxis-dark relative overflow-hidden">
+        <section className="py-10 md:py-14 bg-trayalife-dark relative overflow-hidden">
           {/* Decorative glows */}
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-nyxis-gold/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-nyxis-500/8 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-trayalife-gold/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-trayalife-500/8 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative max-w-7xl mx-auto px-4">
             {flashSales.map((sale) => (
               <div key={sale.id} className="mb-12 last:mb-0">
                 <div className="text-center mb-8">
                   {/* Badge */}
-                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-nyxis-gold-dark to-nyxis-gold text-nyxis-dark px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-gold mb-5">
+                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-trayalife-gold-dark to-trayalife-gold text-trayalife-dark px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-gold mb-5">
                     <FiZap className="h-3.5 w-3.5" /> Flash Sale
                   </span>
 
                   <h2 className="font-jost text-3xl md:text-5xl font-bold text-white mb-2 tracking-tight">
                     {sale.name}
                   </h2>
-                  <p className="text-nyxis-gold font-semibold text-lg mb-1">
+                  <p className="text-trayalife-gold font-semibold text-lg mb-1">
                     {sale.discountPercentage}% OFF on All Products
                   </p>
                   <p className="text-white/40 text-sm mb-7">
@@ -607,8 +607,8 @@ export default function Home() {
                         </CarouselItem>
                       ))}
                     </CarouselContent>
-                    <CarouselPrevious className="absolute -left-1 md:left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-nyxis-800 border-nyxis-gold/20 hover:bg-nyxis-700 text-white shadow-lg z-10" />
-                    <CarouselNext className="absolute -right-1 md:right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-nyxis-800 border-nyxis-gold/20 hover:bg-nyxis-700 text-white shadow-lg z-10" />
+                    <CarouselPrevious className="absolute -left-1 md:left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-trayalife-800 border-trayalife-gold/20 hover:bg-trayalife-700 text-white shadow-lg z-10" />
+                    <CarouselNext className="absolute -right-1 md:right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-trayalife-800 border-trayalife-gold/20 hover:bg-trayalife-700 text-white shadow-lg z-10" />
                   </Carousel>
                 )}
               </div>
