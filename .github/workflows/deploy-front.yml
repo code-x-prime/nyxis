@@ -26,6 +26,7 @@ jobs:
             cd ${{ secrets.REPO_PATH }}
 
             echo "📥 Pulling latest code from main..."
+            git remote prune origin
             git fetch origin main
             git reset --hard origin/main
 
