@@ -8,7 +8,6 @@ import {
   FiMail,
   FiPhone,
   FiMapPin,
-  FiChevronDown,
   FiShield,
   FiTruck,
   FiRefreshCw,
@@ -24,7 +23,6 @@ import Image from "next/image";
 export function Footer() {
   const [socialLinks, setSocialLinks] = useState({});
   const [contactInfo, setContactInfo] = useState({});
-  const [expandedSection, setExpandedSection] = useState(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -47,9 +45,7 @@ export function Footer() {
     fetchSettings();
   }, []);
 
-  const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
+
 
   const shopLinks = [
     { name: "New Arrivals", href: "/products?productType=new" },
@@ -87,36 +83,17 @@ export function Footer() {
     { key: "pinterest", Icon: FaPinterestP },
   ];
 
-  const FooterSection = ({ title, links, sectionKey }) => (
+  const FooterSection = ({ title, links }) => (
     <div>
-      {/* Desktop heading */}
-      <h3 className="hidden md:block font-semibold text-sm text-white mb-4">
+      <h3 className="font-semibold text-sm text-white mb-4 md:mb-6 uppercase tracking-wider">
         {title}
       </h3>
-      {/* Mobile accordion */}
-      <button
-        className="md:hidden w-full flex items-center justify-between py-3 border-b border-gray-700"
-        onClick={() => toggleSection(sectionKey)}
-      >
-        <h3 className="font-semibold text-sm text-white">
-          {title}
-        </h3>
-        <FiChevronDown
-          className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${expandedSection === sectionKey ? "rotate-180" : ""
-            }`}
-        />
-      </button>
-      <ul
-        className={`space-y-2.5 mt-3 overflow-hidden transition-all duration-300 md:max-h-none md:opacity-100 ${expandedSection === sectionKey
-          ? "max-h-[300px] opacity-100"
-          : "max-h-0 opacity-0 md:max-h-none md:opacity-100"
-          }`}
-      >
+      <ul className="space-y-3">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="text-gray-400 hover:text-white text-sm transition-colors duration-200 inline-block"
+              className="text-gray-400 hover:text-trayalife-gold text-sm transition-colors duration-200 inline-block"
             >
               {link.name}
             </Link>
@@ -162,7 +139,7 @@ export function Footer() {
                   alt="Traya Life"
                   width={100}
                   height={100}
-                  className="h-24 w-auto"
+                  className="h-20 w-auto brightness-0 invert"
                 />
               </Link>
               <p className="text-gray-300 text-sm leading-relaxed max-w-sm mb-6">
@@ -196,17 +173,14 @@ export function Footer() {
             <FooterSection
               title="Shop"
               links={shopLinks}
-              sectionKey="shop"
             />
             <FooterSection
               title="Help"
               links={helpLinks}
-              sectionKey="help"
             />
             <FooterSection
               title="Policies"
               links={policyLinks}
-              sectionKey="policies"
             />
           </div>
         </div>

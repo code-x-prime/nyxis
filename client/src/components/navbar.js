@@ -239,7 +239,7 @@ export function Navbar() {
                   alt="Traya Life"
                   width={100}
                   height={100}
-                  className="h-20 w-auto"
+                  className="h-14 w-auto"
                 />
               </Link>
 
@@ -275,7 +275,7 @@ export function Navbar() {
                   alt="Traya Life"
                   width={100}
                   height={100}
-                  className="h-20 w-auto"
+                  className="h-16 w-auto"
                 />
               </Link>
 
@@ -558,7 +558,7 @@ export function Navbar() {
           {/* Menu Header */}
           <div className="bg-trayalife-dark px-5 py-4 flex items-center justify-between shrink-0">
             <div>
-              <Image src="/logo-2.png" alt="Traya Life" width={80} height={32} className="h-8 w-auto brightness-0 invert" />
+              <Image src="/logo-2.png" alt="Traya Life" width={100} height={40} className="h-10 w-auto brightness-0 invert" />
               <p className="text-trayalife-gold text-[0.6rem] tracking-widest uppercase mt-1 font-jost">Holistic Hair & Wellness Solutions</p>
             </div>
             <button
