@@ -25,19 +25,22 @@ jobs:
 
             cd ${{ secrets.REPO_PATH }}
 
-            echo "📥 Pull latest code..."
+            echo "📥 Pulling latest code from main..."
             git fetch origin main
             git reset --hard origin/main
 
-            echo "📦 Install dependencies..."
             cd server
 
+            echo "🧹 Cleaning old dependencies..."
+            rm -rf node_modules
+
+            echo "📦 Installing fresh dependencies..."
             npm ci
 
             echo "🧬 Prisma generate..."
             npx prisma generate
 
-            echo "🚀 Restart PM2..."
-            pm2 restart traya-server --update-env
-
+            echo "🚀 Reloading PM2 for zero-downtime..."
+            pm2 reload traya-server --update-env || pm2 start index.js --name "traya-server"
+            
             echo "✅ Server deployed successfully!"

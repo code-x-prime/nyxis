@@ -25,19 +25,24 @@ jobs:
 
             cd ${{ secrets.REPO_PATH }}
 
-            echo "📥 Pull latest code..."
+            echo "📥 Pulling latest code from main..."
             git fetch origin main
             git reset --hard origin/main
 
-            echo "📦 Install dependencies..."
             cd front
 
+            echo "🧹 Cleaning old build and dependencies..."
+            rm -rf dist node_modules
+
+            echo "📦 Installing fresh dependencies..."
             npm ci
 
-            echo "🏗️ Build front..."
-            npm run build
-
-            echo "🚀 Restart PM2..."
-            pm2 restart traya-front --update-env
-
-            echo "✅ Front deployed successfully!"
+            echo "🏗️ Building front..."
+            if npm run build; then
+              echo "🚀 Build successful! Reloading PM2 for zero-downtime..."
+              pm2 reload traya-front --update-env || pm2 start npm --name "traya-front" -- start
+              echo "✅ Front deployed successfully!"
+            else
+              echo "❌ Build failed! Keeping the current version running."
+              exit 1
+            fi

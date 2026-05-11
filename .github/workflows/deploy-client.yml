@@ -25,19 +25,24 @@ jobs:
 
             cd ${{ secrets.REPO_PATH }}
 
-            echo "📥 Pull latest code..."
+            echo "📥 Pulling latest code from main..."
             git fetch origin main
             git reset --hard origin/main
 
-            echo "📦 Install dependencies..."
             cd client
 
+            echo "🧹 Cleaning old build and dependencies..."
+            rm -rf .next node_modules
+
+            echo "📦 Installing fresh dependencies..."
             npm ci
 
-            echo "🏗️ Build client..."
-            npm run build
-
-            echo "🚀 Restart PM2..."
-            pm2 restart traya-client --update-env
-
-            echo "✅ Client deployed successfully!"
+            echo "🏗️ Building client (Nyxis)..."
+            if npm run build; then
+              echo "🚀 Build successful! Reloading PM2 for zero-downtime..."
+              pm2 reload traya-client --update-env || pm2 start npm --name "traya-client" -- start
+              echo "✅ Client deployed successfully!"
+            else
+              echo "❌ Build failed! Keeping the current version running."
+              exit 1
+            fi
