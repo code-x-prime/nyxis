@@ -406,7 +406,7 @@ const ProductSection = ({
 
   return (
     <section className={`py-6 md:py-8 ${p.outer}`}>
-      <div className=" mx-auto px-10">
+      <div className=" mx-auto px-4 md:px-10">
         <FeaturedProducts
           products={products}
           isLoading={isLoading}
