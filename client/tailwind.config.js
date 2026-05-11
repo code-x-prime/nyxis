@@ -15,7 +15,7 @@ module.exports = {
         poppins: ["var(--font-poppins)", "sans-serif"],
       },
 
-      /* ─── NYXIS Brand Colors ─── */
+      /* ─── Traya Life Brand Colors ─── */
       colors: {
         /* System tokens (shadcn/ui compatible) */
         background: "hsl(var(--background))",
@@ -62,8 +62,8 @@ module.exports = {
           5: "hsl(var(--chart-5))",
         },
 
-        /* ── NYXIS Named Palette ── */
-        nyxis: {
+        /* ── Traya Life Named Palette ── */
+        trayalife: {
           /* Forest Green scale */
           50: "#e8f5f2",
           100: "#c8e8e1",

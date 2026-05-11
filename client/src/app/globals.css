@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────
-   NYXIS – "Power Beneath the Surface"
+   Traya Life – "Holistic Hair & Wellness"
    Brand: Forest Green #166454 · Gold #C9A84C
    Font: Jost (display/UI) + Lato (body)
 ───────────────────────────────────────────── */
@@ -24,7 +24,7 @@
     scrollbar-width: none;
   }
 
-  /* NYXIS brand utilities */
+  /* Traya Life brand utilities */
   .text-brand {
     color: #166454;
   }
