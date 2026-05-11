@@ -19,7 +19,6 @@ import {
   Globe,
   CreditCard,
   Truck,
-  ImageIcon,
   Eye,
   EyeOff,
   Info,
@@ -490,13 +489,26 @@ export default function SiteSettingsPage() {
   const handleSaveShiprocket = async () => {
     try {
       setIsSaving(true);
+      // 1. Save main shiprocket settings (credentials and status)
       await api.put("/api/admin/site-settings", {
         shiprocketEmail: form.shiprocketEmail || null,
         shiprocketPassword: form.shiprocketPassword !== "••••••••" ? form.shiprocketPassword : undefined,
         shiprocketEnabled: form.shiprocketEnabled,
       });
-      toast.success("Shiprocket settings saved");
+
+      // 2. Save extended settings (dimensions and charges)
+      await api.put("/api/admin/shiprocket/settings", {
+        defaultLength,
+        defaultBreadth,
+        defaultHeight,
+        defaultWeight,
+        shippingCharge,
+        freeShippingThreshold,
+      });
+
+      toast.success("Shipping settings saved successfully");
       fetchSettings();
+      fetchShiprocketExtended();
     } catch (err: unknown) {
       const msg = err && typeof err === "object" && "response" in err ? (err as { response?: { data?: { message?: string } } }).response?.data?.message : undefined;
       toast.error(msg || "Failed to save");
@@ -518,9 +530,9 @@ export default function SiteSettingsPage() {
         razorpayEnabled,
         codCharge: parseFloat(String(codCharge)) || 0,
       });
-      
+
       // 2. Sync SiteSettings (razorpayEnabled and keys if changed)
-      await api.put("/api/admin/site-settings", { 
+      await api.put("/api/admin/site-settings", {
         razorpayEnabled,
         razorpayKeyId: form.razorpayKeyId || null,
         razorpayKeySecret: form.razorpayKeySecret !== "••••••••" ? form.razorpayKeySecret : undefined,
@@ -651,10 +663,7 @@ export default function SiteSettingsPage() {
             <Truck className="h-4 w-4 mr-2" />
             Shipping
           </TabsTrigger>
-          <TabsTrigger value="branding" className="data-[state=active]:bg-[var(--bg-card)]">
-            <ImageIcon className="h-4 w-4 mr-2" />
-            Branding
-          </TabsTrigger>
+
           <TabsTrigger value="media" className="data-[state=active]:bg-[var(--bg-card)]">
             <Cloud className="h-4 w-4 mr-2" />
             Media Storage
@@ -1198,18 +1207,7 @@ export default function SiteSettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="branding" className="space-y-6">
-          <Card className="bg-[var(--bg-card)] border-[var(--border-color)]">
-            <CardHeader>
-              <CardTitle className="text-[var(--text-primary)]">Logo & Favicon</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Logo and favicon upload can be added. Use the General tab to set siteLogo and siteFavicon URLs if you have existing assets.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
+
 
         <TabsContent value="media" className="space-y-6">
           <Card className="bg-[var(--bg-card)] border-[var(--border-color)]">

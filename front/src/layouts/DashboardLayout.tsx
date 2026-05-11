@@ -228,7 +228,7 @@ export default function DashboardLayout() {
         support: false,
         settings: false,
       });
-    } else if (path.startsWith("/users") || path.startsWith("/partner") || path.startsWith("/referrals")) {
+    } else if (path.startsWith("/users") || path.startsWith("/partner")) {
       setOpenSections({
         products: false,
         orders: false,
@@ -244,7 +244,7 @@ export default function DashboardLayout() {
         support: true,
         settings: false,
       });
-    } else if (path.startsWith("/settings") || path.startsWith("/site-settings") || path.startsWith("/moq-settings") || path.startsWith("/pricing-slabs") || path.startsWith("/marketing-settings")) {
+    } else if (path.startsWith("/settings") || path.startsWith("/site-settings") || path.startsWith("/moq-settings") || path.startsWith("/marketing-settings")) {
       setOpenSections({
         products: false,
         orders: false,
@@ -494,16 +494,7 @@ export default function DashboardLayout() {
                       admin?.role === "SUPER_ADMIN" ||
                       hasPermissionFor(admin, Resource.USERS, Action.READ),
                   },
-                  {
-                    href: "/referrals",
-                    title: t("nav.referrals"),
-                    icon: <Users className="h-3 w-3" />,
-                    hasPermission: hasPermissionFor(
-                      admin,
-                      Resource.USERS,
-                      Action.READ
-                    ),
-                  },
+
                 ]}
               />
 
@@ -585,15 +576,7 @@ export default function DashboardLayout() {
                     ),
                   },
 
-                  {
-                    href: "/pricing-slabs",
-                    title: t("nav.pricing_slabs"),
-                    hasPermission: hasPermissionFor(
-                      admin,
-                      Resource.PRODUCTS,
-                      Action.UPDATE
-                    ),
-                  },
+
                   {
                     href: "/email-delivery-settings",
                     title: t("nav.email_delivery"),
@@ -851,16 +834,7 @@ export default function DashboardLayout() {
                       admin?.role === "SUPER_ADMIN" ||
                       hasPermissionFor(admin, Resource.USERS, Action.READ),
                   },
-                  {
-                    href: "/referrals",
-                    title: t("nav.referrals"),
-                    icon: <Users className="h-3 w-3" />,
-                    hasPermission: hasPermissionFor(
-                      admin,
-                      Resource.USERS,
-                      Action.READ
-                    ),
-                  },
+
                 ]}
               />
 
@@ -942,15 +916,7 @@ export default function DashboardLayout() {
                       Action.UPDATE
                     ),
                   },
-                  {
-                    href: "/pricing-slabs",
-                    title: t("nav.pricing_slabs"),
-                    hasPermission: hasPermissionFor(
-                      admin,
-                      Resource.PRODUCTS,
-                      Action.UPDATE
-                    ),
-                  },
+
                   {
                     href: "/payment-settings",
                     title: t("nav.payment"),
