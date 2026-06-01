@@ -27,6 +27,7 @@ jobs:
 
             echo "📥 Pulling latest code from main..."
             git remote prune origin
+            rm -f .git/refs/remotes/origin/main
             git fetch origin main
             git reset --hard origin/main
 
