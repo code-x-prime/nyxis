@@ -1,4 +1,5 @@
-import { Lato, Jost } from "next/font/google";
+import { Lato } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
@@ -10,7 +11,7 @@ import { ClientOnly } from "@/components/client-only";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import TawkToWidget from "@/components/TawkToWidget";
 
-/* ── Body font: Lato ── */
+/* ── Body font: Lato (Google) ── */
 const lato = Lato({
   subsets: ["latin"],
   weight: ["300", "400", "700"],
@@ -18,12 +19,12 @@ const lato = Lato({
   display: "swap",
 });
 
-/* ── Display / UI font: Jost ── */
-const jost = Jost({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-jost",
+/* ── Display / UI font: Assistant (local variable font) ── */
+const assistant = localFont({
+  src: "./fonts/Assistant-VariableFont_wght.ttf",
+  variable: "--font-assistant",
   display: "swap",
+  weight: "200 800",
 });
 
 export const metadata = {
@@ -36,7 +37,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${lato.variable} ${jost.variable} font-lato antialiased`}
+        className={`${lato.variable} ${assistant.variable} font-lato antialiased`}
       >
         <AuthProvider>
           <CartProvider>

@@ -532,7 +532,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
           tags: req.body.tags
             ? Array.isArray(req.body.tags)
               ? req.body.tags
-              : [req.body.tags]
+              : (() => { try { const p = JSON.parse(req.body.tags); return Array.isArray(p) ? p : [req.body.tags]; } catch { return [req.body.tags]; } })()
             : [],
           topBrandIds: req.body.topBrandIds
             ? typeof req.body.topBrandIds === "string"
@@ -1304,7 +1304,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
           ...(req.body.tags !== undefined && {
             tags: Array.isArray(req.body.tags)
               ? req.body.tags
-              : [req.body.tags],
+              : (() => { try { const p = JSON.parse(req.body.tags); return Array.isArray(p) ? p : [req.body.tags]; } catch { return [req.body.tags]; } })(),
           }),
           ...(req.body.topBrandIds !== undefined && {
             topBrandIds:

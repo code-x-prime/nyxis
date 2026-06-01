@@ -10,9 +10,10 @@ module.exports = {
     extend: {
       /* ─── Fonts ─── */
       fontFamily: {
-        jost: ["var(--font-jost)", "sans-serif"],
+        assistant: ["var(--font-assistant)", "sans-serif"],
+        jost: ["var(--font-assistant)", "sans-serif"],
         lato: ["var(--font-lato)", "sans-serif"],
-        poppins: ["var(--font-poppins)", "sans-serif"],
+        poppins: ["var(--font-lato)", "sans-serif"],
       },
 
       /* ─── Traya Life Brand Colors ─── */

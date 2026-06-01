@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─────────────────────────────────────────────
-   Traya Life – "Holistic Hair & Wellness"
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Traya Life "“ "Holistic Hair & Wellness"
    Brand: Forest Green #166454 · Gold #C9A84C
-   Font: Jost (display/UI) + Lato (body)
-───────────────────────────────────────────── */
+   Font: Assistant (display/UI/headings) + Lato (body)
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 @layer utilities {
   .text-balance {
@@ -95,7 +95,7 @@
   }
 }
 
-/* ─── CSS Variables ─── */
+/* â”€â”€â”€ CSS Variables â”€â”€â”€ */
 @layer base {
   :root {
     /* Layout */
@@ -108,12 +108,12 @@
     --popover: 0 0% 100%;
     --popover-foreground: 160 20% 8%;
 
-    /* Primary – Forest Green */
+    /* Primary "“ Forest Green */
     --primary: 168 72% 25%;         /* #166454 */
     --primary-foreground: 0 0% 100%;
     --primary-light: 168 72% 95%;   /* very light tint */
 
-    /* Secondary – Gold */
+    /* Secondary "“ Gold */
     --secondary: 41 56% 54%;        /* #C9A84C */
     --secondary-foreground: 0 0% 100%;
 
@@ -141,7 +141,7 @@
     --chart-4: 27 87% 67%;
     --chart-5: 340 75% 55%;
 
-    /* Radius – slightly rounded, premium feel */
+    /* Radius "“ slightly rounded, premium feel */
     --radius: 0.375rem;
 
     /* Section backgrounds (Smytten-style alternating) */
@@ -179,7 +179,7 @@
   }
 }
 
-/* ─── Base Styles ─── */
+/* â”€â”€â”€ Base Styles â”€â”€â”€ */
 @layer base {
   * {
     @apply border-border;
@@ -194,16 +194,16 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-jost), var(--font-lato), -apple-system,
+    font-family: var(--font-assistant), var(--font-lato), -apple-system,
       BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 15px;
     line-height: 1.65;
     color: #1a1a1a;
   }
 
-  /* ── Typography Scale ── */
+  /* â”€â”€ Typography Scale â”€â”€ */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-jost), sans-serif;
+    font-family: var(--font-assistant), sans-serif;
     font-weight: 700;
     line-height: 1.2;
     color: #0d1f1b;
@@ -236,10 +236,10 @@
   }
 }
 
-/* ─── Component Styles ─── */
+/* â”€â”€â”€ Component Styles â”€â”€â”€ */
 @layer components {
 
-  /* ── Product Card (Smytten-inspired) ── */
+  /* â”€â”€ Product Card (Smytten-inspired) â”€â”€ */
   .product-card {
     @apply bg-white rounded-lg overflow-hidden transition-all duration-300;
     border: 1px solid hsl(var(--border));
@@ -251,12 +251,12 @@
     border-color: #166454;
   }
 
-  /* ── Section Heading (Smytten-style label + title) ── */
+  /* â”€â”€ Section Heading (Smytten-style label + title) â”€â”€ */
   .section-label {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-family: var(--font-jost), sans-serif;
+    font-family: var(--font-assistant), sans-serif;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -272,7 +272,7 @@
     border-radius: 2px;
   }
 
-  /* ── "Add to cart" Button ── */
+  /* â”€â”€ "Add to cart" Button â”€â”€ */
   .btn-cart {
     @apply flex items-center justify-center gap-2 w-full py-2.5 rounded-md text-sm font-semibold transition-all duration-200;
     background-color: #166454;
@@ -286,7 +286,7 @@
     box-shadow: 0 4px 12px rgba(22, 100, 84, 0.3);
   }
 
-  /* ── Ghost Button ── */
+  /* â”€â”€ Ghost Button â”€â”€ */
   .btn-outline-brand {
     @apply flex items-center justify-center gap-2 px-5 py-2.5 rounded-md text-sm font-semibold transition-all duration-200;
     background: transparent;
@@ -298,7 +298,7 @@
     color: #fff;
   }
 
-  /* ── Gold CTA Button ── */
+  /* â”€â”€ Gold CTA Button â”€â”€ */
   .btn-gold {
     @apply flex items-center justify-center gap-2 px-6 py-3 rounded-md text-sm font-bold transition-all duration-200;
     background: linear-gradient(135deg, #C9A84C 0%, #e8cc7a 50%, #C9A84C 100%);
@@ -312,7 +312,7 @@
     box-shadow: 0 4px 16px rgba(201, 168, 76, 0.4);
   }
 
-  /* ── Promo Banner (like Smytten hero banners) ── */
+  /* â”€â”€ Promo Banner (like Smytten hero banners) â”€â”€ */
   .promo-banner {
     @apply relative overflow-hidden rounded-xl;
     background: linear-gradient(135deg, #0d1f1b 0%, #166454 60%, #1e8a72 100%);
@@ -322,7 +322,7 @@
     background: linear-gradient(135deg, #2a1f05 0%, #7a5e1a 50%, #C9A84C 100%);
   }
 
-  /* ── Navbar ── */
+  /* â”€â”€ Navbar â”€â”€ */
   .navbar-link {
     @apply text-sm font-medium transition-colors duration-200;
     color: #1a1a1a;
@@ -347,7 +347,7 @@
     color: #166454;
   }
 
-  /* ── Category Pill ── */
+  /* â”€â”€ Category Pill â”€â”€ */
   .category-pill {
     @apply inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer;
     background: hsl(var(--muted));
@@ -361,7 +361,7 @@
     border-color: #166454;
   }
 
-  /* ── Discount Badge ── */
+  /* â”€â”€ Discount Badge â”€â”€ */
   .discount-badge {
     @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-bold;
     background: #e8f5f2;
@@ -372,7 +372,7 @@
     color: #c45c00;
   }
 
-  /* ── Price Display ── */
+  /* â”€â”€ Price Display â”€â”€ */
   .price-original {
     @apply text-xs line-through;
     color: #999;
@@ -380,16 +380,16 @@
   .price-current {
     @apply text-base font-bold;
     color: #0d1f1b;
-    font-family: var(--font-jost), sans-serif;
+    font-family: var(--font-assistant), sans-serif;
   }
 
-  /* ── Rating Stars ── */
+  /* â”€â”€ Rating Stars â”€â”€ */
   .rating-star {
     color: #f5a623;
     font-size: 0.7rem;
   }
 
-  /* ── Horizontal Scrollable Row (like Smytten product rows) ── */
+  /* â”€â”€ Horizontal Scrollable Row (like Smytten product rows) â”€â”€ */
   .product-row {
     @apply flex gap-4 overflow-x-auto pb-3;
     scrollbar-width: none;
@@ -402,7 +402,7 @@
     flex-shrink: 0;
   }
 
-  /* ── Brand Collection Card ── */
+  /* â”€â”€ Brand Collection Card â”€â”€ */
   .brand-card {
     @apply relative overflow-hidden rounded-xl text-center cursor-pointer transition-all duration-300;
     background: linear-gradient(180deg, #f0faf7 0%, #e0f4ef 100%);
@@ -428,7 +428,7 @@
     backdrop-filter: blur(4px);
   }
 
-  /* ── Trust Badges Bar ── */
+  /* â”€â”€ Trust Badges Bar â”€â”€ */
   .trust-bar {
     @apply flex items-center justify-center gap-8 py-3 text-xs font-semibold;
     color: #fff;
@@ -439,7 +439,7 @@
     @apply flex items-center gap-2;
   }
 
-  /* ── Section Row Container (Smytten-style: label left + cards right) ── */
+  /* â”€â”€ Section Row Container (Smytten-style: label left + cards right) â”€â”€ */
   .section-row {
     @apply flex gap-0 rounded-2xl overflow-hidden;
   }
@@ -452,7 +452,7 @@
     background: hsl(var(--section-alt));
   }
 
-  /* ── Footer ── */
+  /* â”€â”€ Footer â”€â”€ */
   .footer-link {
     @apply text-sm transition-colors duration-200;
     color: #9ca3af;
@@ -461,14 +461,14 @@
     color: #C9A84C;
   }
 
-  /* ── Prose (blog/rich-text content) ── */
+  /* â”€â”€ Prose (blog/rich-text content) â”€â”€ */
   .prose {
     @apply text-gray-700 max-w-none;
   }
   .prose h1, .prose h2, .prose h3,
   .prose h4, .prose h5, .prose h6 {
     @apply text-gray-900 font-bold mt-8 mb-4;
-    font-family: var(--font-jost), sans-serif;
+    font-family: var(--font-assistant), sans-serif;
   }
   .prose h1 { @apply text-3xl; }
   .prose h2 { @apply text-2xl; }
@@ -509,7 +509,7 @@
   }
 }
 
-/* ─── Global Animations ─── */
+/* â”€â”€â”€ Global Animations â”€â”€â”€ */
 @keyframes shimmer {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
@@ -529,7 +529,7 @@
 .animate-fade-up   { animation: fadeUp 0.4s ease both; }
 .animate-scale-in  { animation: scaleIn 0.3s ease both; }
 
-/* ─── Sonner Toast Overrides ─── */
+/* â”€â”€â”€ Sonner Toast Overrides â”€â”€â”€ */
 [data-sonner-toast][data-type="success"] {
   background: #166454 !important;
   color: white !important;
@@ -541,7 +541,7 @@
   border: none !important;
 }
 
-/* ─── Mobile-first responsive helpers ─── */
+/* â”€â”€â”€ Mobile-first responsive helpers â”€â”€â”€ */
 @media (max-width: 640px) {
   .section-row {
     @apply flex-col;

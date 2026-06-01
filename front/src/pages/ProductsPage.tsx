@@ -2688,6 +2688,104 @@ export function ProductForm({
             </div>
           )}
 
+          {/* Product Feature Icons Section */}
+          <div className="space-y-4 rounded-lg border p-4 bg-[var(--bg-secondary)]">
+            <div className="border-b pb-2">
+              <h2 className="text-xl font-semibold">Product Feature Icons</h2>
+              <p className="text-sm text-[var(--text-secondary)] mt-1">
+                Choose up to 3 icons shown below Add to Cart on product page.
+              </p>
+            </div>
+            {(() => {
+              const FEATURE_OPTIONS: { id: string; label: string; icon: string }[] = [
+                { id: "feature:formulated-by-experts", label: "Formulated by Experts",              icon: "/icons/icon-formulated.svg"    },
+                { id: "feature:quality-assurance",     label: "Quality Assurance with Lab Testing", icon: "/icons/icon-quality.svg"       },
+                { id: "feature:easy-refunds",          label: "Easy Refunds Process",               icon: "/icons/icon-refunds.svg"       },
+                { id: "feature:natural-ingredients",   label: "Natural Ingredients",                icon: "/icons/icon-natural.svg"       },
+                { id: "feature:dermatologist-tested",  label: "Dermatologist Tested",               icon: "/icons/icon-derm.svg"          },
+                { id: "feature:no-harmful-chemicals",  label: "No Harmful Chemicals",               icon: "/icons/icon-no-chemicals.svg"  },
+                { id: "feature:cruelty-free",          label: "Cruelty Free",                       icon: "/icons/icon-cruelty.svg"       },
+                { id: "feature:fssai-approved",        label: "FSSAI Approved",                     icon: "/icons/icon-fssai.svg"         },
+                { id: "feature:gmp-certified",         label: "GMP Certified",                      icon: "/icons/icon-gmp.svg"           },
+              ];
+
+              const selectedFeatures = product.tags.filter((t) => t.startsWith("feature:"));
+
+              const toggle = (id: string) => {
+                const already = product.tags.includes(id);
+                if (!already && selectedFeatures.length >= 3) return;
+                setProduct((prev) => ({
+                  ...prev,
+                  tags: already ? prev.tags.filter((t) => t !== id) : [...prev.tags, id],
+                }));
+              };
+
+              return (
+                <div className="space-y-4">
+                  {/* Preview of selected */}
+                  {selectedFeatures.length > 0 && (
+                    <div className="flex items-center gap-6 p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+                      <span className="text-xs text-[var(--text-secondary)] font-medium flex-shrink-0">Preview:</span>
+                      <div className="flex gap-6 flex-wrap">
+                        {selectedFeatures.slice(0, 3).map((tag) => {
+                          const opt = FEATURE_OPTIONS.find((o) => o.id === tag);
+                          if (!opt) return null;
+                          return (
+                            <div key={tag} className="flex flex-col items-center gap-1.5 text-center min-w-[64px]">
+                              <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center p-2">
+                                <img src={opt.icon} alt={opt.label} className="w-full h-full object-contain" style={{filter:"invert(29%) sepia(55%) saturate(500%) hue-rotate(120deg) brightness(80%)"}} />
+                              </div>
+                              <span className="text-[10px] text-[var(--text-secondary)] leading-tight max-w-[72px]">{opt.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Option grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {FEATURE_OPTIONS.map((opt) => {
+                      const isSelected = product.tags.includes(opt.id);
+                      const isDisabled = !isSelected && selectedFeatures.length >= 3;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          disabled={isDisabled}
+                          onClick={() => toggle(opt.id)}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border text-sm font-medium text-left transition-all ${
+                            isSelected
+                              ? "border-emerald-500 bg-emerald-50 text-emerald-800"
+                              : isDisabled
+                              ? "border-[var(--border-color)] opacity-40 cursor-not-allowed bg-[var(--bg-card)]"
+                              : "border-[var(--border-color)] text-[var(--text-primary)] hover:border-emerald-400 bg-[var(--bg-card)]"
+                          }`}
+                        >
+                          {/* Downloaded SVG icon */}
+                          <img src={opt.icon} alt={opt.label} className="w-6 h-6 flex-shrink-0 object-contain" style={{filter: isSelected ? "invert(29%) sepia(55%) saturate(500%) hue-rotate(120deg) brightness(80%)" : "invert(60%) sepia(0%) saturate(0%)"}} />
+                          {/* Checkbox + label */}
+                          <span className="flex-1 leading-tight">{opt.label}</span>
+                          <span className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ml-auto ${isSelected ? "bg-emerald-500 border-emerald-500" : "border-gray-300"}`}>
+                            {isSelected && (
+                              <svg viewBox="0 0 10 8" className="w-2.5 h-2.5" fill="none">
+                                <path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    {selectedFeatures.length}/3 selected
+                    {selectedFeatures.length === 3 && " · Deselect one to pick another"}
+                  </p>
+                </div>
+              );
+            })()}
+          </div>
+
           {/* Submit Buttons */}
           <div className="flex justify-end gap-2">
             <Button
@@ -3542,6 +3640,32 @@ function ProductsList() {
                                 {product.variants.length} variants
                               </span>
                             )}
+                            {/* Feature icons indicator */}
+                            {(() => {
+                              const FEAT_LABEL: Record<string, string> = {
+                                "feature:formulated-by-experts": "Formulated",
+                                "feature:quality-assurance": "Lab Tested",
+                                "feature:easy-refunds": "Easy Refunds",
+                                "feature:natural-ingredients": "Natural",
+                                "feature:dermatologist-tested": "Derm Tested",
+                                "feature:no-harmful-chemicals": "No Chemicals",
+                                "feature:cruelty-free": "Cruelty Free",
+                                "feature:fssai-approved": "FSSAI",
+                                "feature:gmp-certified": "GMP",
+                              };
+                              const feats = (product.tags || []).filter((t: string) => t.startsWith("feature:"));
+                              if (!feats.length) return null;
+                              return (
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  {feats.slice(0, 3).map((t: string) => (
+                                    <span key={t} className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                      <svg viewBox="0 0 8 8" className="w-2 h-2 fill-emerald-500"><circle cx="4" cy="4" r="4"/></svg>
+                                      {FEAT_LABEL[t] || t.replace("feature:", "")}
+                                    </span>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
 
