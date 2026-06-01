@@ -693,7 +693,24 @@ export default function ProductContent({ slug }) {
               };
 
               const featureTags = (product.tags || []).filter((t) => t.startsWith("feature:"));
-              if (featureTags.length === 0) return null;
+              // static ingredients display — will be dynamic later
+              const STATIC_INGREDIENTS = [
+                { src: "/saffron.jpg",       label: "Saffron"       },
+                { src: "/aloe-vera.jpg",     label: "Aloe Vera"     },
+                { src: "/sea-buckthorn.jpg", label: "Sea Buckthorn" },
+              ];
+              return (
+                <div className="grid grid-cols-3 gap-1 py-5 border-t border-gray-100">
+                  {STATIC_INGREDIENTS.map(({ src, label }) => (
+                    <div key={label} className="flex flex-col items-center text-center gap-2">
+                      <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#d0ede6] bg-[#f0faf7]">
+                        <img src={src} alt={label} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-[11px] font-semibold text-gray-600 leading-tight">{label}</span>
+                    </div>
+                  ))}
+                </div>
+              );
 
               return (
                 <div className={`grid gap-4 py-5 border-t border-gray-100 ${featureTags.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
