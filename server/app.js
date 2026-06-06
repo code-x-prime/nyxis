@@ -47,13 +47,13 @@ import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
-/* -------------------- BASIC MIDDLEWARE -------------------- */
+/* -------------------- BASIC MIDDLEWARE ------------------- */
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-/* -------------------- REQUEST LOGGER -------------------- */
+/* -------------------- REQUEST LOGGER ------------------- */
 
 app.use((req, res, next) => {
   logger(

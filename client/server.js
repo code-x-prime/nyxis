@@ -14,7 +14,7 @@ app
   .prepare()
   .then(() => {
     createServer((req, res) => {
-      handle(req, res); // Handle the requests
+      handle(req, res); // Handle the requests 
     }).listen(port, (err) => {
       if (err) throw err;
       console.log(`> Ready on http://localhost:${port}`); // Log that the server is ready
